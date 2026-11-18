@@ -57,7 +57,7 @@ def balance_tools(owner):
     def list_point_programs() -> dict:
         """List supported rewards program codes and names to resolve user-supplied balances."""
         programs = _balances_backend().list_programs()
-        return {"programs": programs, "total_count": len(programs)}
+        return {"programs": programs, "count": len(programs), "total_count": len(programs)}
 
     def get_point_balances() -> dict:
         """Read this link's recorded points/miles totals and dates. These are not live bank balances."""
@@ -170,7 +170,7 @@ def portfolio_tool(owner):
         """
         try:
             cards_list = _cards_backend().get_cards(owner, include_closed=include_closed)
-            return {"cards": cards_list, "total_count": len(cards_list)}
+            return {"cards": cards_list, "count": len(cards_list), "total_count": len(cards_list)}
         except psycopg.Error:
             raise ToolError("Could not read saved cards. Please try again later.") from None
         except ValueError as err:
