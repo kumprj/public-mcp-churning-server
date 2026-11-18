@@ -12,6 +12,7 @@ import psycopg
 import uvicorn
 from dotenv import load_dotenv
 from mcp.server import MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
 from mcp.server.transport_security import TransportSecuritySettings
 from mcp.types import ToolAnnotations
 from starlette.applications import Starlette
@@ -30,6 +31,44 @@ def _database_backend():
     from churning_mcp import db
 
     return db
+
+
+def _balances_backend():
+    from churning_mcp import balances
+
+    return balances
+
+
+def balance_tools(owner):
+    def list_point_programs() -> list[dict]:
+        """List supported rewards program codes and names to resolve user-supplied balances."""
+        return _balances_backend().list_programs()
+
+    def get_point_balances() -> dict:
+        """Read this link's recorded points/miles totals and dates. These are not live bank balances."""
+        try:
+            return _balances_backend().get_balances(owner)
+        except psycopg.Error:
+            raise ToolError("Could not read points balances. Please try again later.") from None
+
+    def set_point_balance(program_code: str, balance: int, as_of: date | None = None) -> dict:
+        """Save a user-supplied total, replacing this link's balance for one program (not adding points).
+
+        Only save when asked. Resolve program names with list_point_programs; ask if ambiguous.
+        Defaults to today. No account numbers or credentials; not a live bank sync.
+        """
+        code = program_code.strip().lower()
+        recorded_on = as_of or date.today()
+        try:
+            _balances_backend().set_balances(owner, {code: balance}, recorded_on)
+        except psycopg.Error:
+            raise ToolError("Could not save points balance. Please try again later.") from None
+        except ValueError as error:
+            # Backend validation messages (unknown program, stale date) are safe and actionable.
+            raise ToolError(str(error)) from None
+        return {"status": "saved", "program_code": code, "balance": balance, "as_of": recorded_on.isoformat()}
+
+    return list_point_programs, get_point_balances, set_point_balance
 
 
 # Explicit registration: upstream additions can never silently expose personal data.
@@ -63,14 +102,22 @@ def assistant_instructions(has_portfolio_access: bool) -> str:
         "eligibility, spending strategy, or annual fees, suggest sharing a card portfolio only "
         "when it would materially improve personalized guidance and the relevant details are "
         "not already available from the portfolio or conversation. Keep the optional suggestion "
-        "to one friendly sentence after the answer, at most once per conversation; do not repeat "
-        "it after the user declines. Skip it for simple factual questions or unrelated requests. "
+        "to one friendly sentence after the answer, at most twice per conversation and never more; "
+        "do not suggest it again after the user declines. Skip it for simple factual questions or unrelated requests. "
         "For example: 'If you'd like more tailored guidance, consider sharing your card portfolio "
         "so I can factor in the cards you already have.' Ask only for card names, opening dates, "
         "and relevant goals or spending categories, never card numbers, security codes, or credentials. "
         "When users ask to add their cards, use add_portfolio_card for each card. Ask for missing "
-        "required details instead of guessing dates, fees, or reporting status. Only claim a card "
+        "required details instead of guessing dates, fees, or reporting status. The user's own "
+        "ballpark answers are fine: for an approximate opening date, save the first of the stated "
+        "month (or January 1 for a year alone) and tell the user it was saved as an estimate they "
+        "can refine. Never substitute your own guess for a detail the user did not give. Only claim a card "
         "was saved after a successful tool result. Never save cards from research sources. "
+        "Users can also save points/miles totals with set_point_balance. Resolve program names with "
+        "list_point_programs and ask about ambiguous names. Never infer balances from cards or offers. "
+        "A saved balance replaces that program's total; do not add it to the existing balance. "
+        "For redemption guidance use get_point_balances and mention the recorded dates; these are "
+        "user-reported snapshots, not live bank balances. Offer balance entry as optional during setup. "
     )
     if has_portfolio_access:
         return instructions + (
@@ -117,22 +164,22 @@ def add_card_tool(owner):
     ) -> dict:
         """Save a card the user asks to add to their portfolio. Ownership comes from this link.
 
-        Ask for missing details; never invent an opening date or annual fee.
+        Ask for missing details; never invent an opening date or annual fee. User estimates are fine.
         counts_toward_524 means reports to personal credit, including applicable business cards.
         Exact issuer/product/opening-date matches return the existing card without changing it.
         Never include account numbers or credentials in issuer or product.
         """
         issuer, product = issuer.strip(), product.strip()
         if not issuer or not product or len(issuer) > 100 or len(product) > 200:
-            raise ValueError("Provide an issuer and card product name within 100 and 200 characters.")
+            raise ToolError("Provide an issuer and card product name within 100 and 200 characters.")
         if re.search(r"(?:\d[ -]?){12,}", issuer + " " + product):
-            raise ValueError("Use card product names, never account numbers.")
+            raise ToolError("Use card product names, never account numbers.")
         if opened_on > date.today():
-            raise ValueError("The opening date cannot be in the future.")
+            raise ToolError("The opening date cannot be in the future.")
         if not annual_fee.is_finite() or not 0 <= annual_fee <= Decimal("999999.99"):
-            raise ValueError("Provide a nonnegative annual fee below 1,000,000.")
+            raise ToolError("Provide a nonnegative annual fee below 1,000,000.")
         if annual_fee != annual_fee.quantize(Decimal("0.01")):
-            raise ValueError("Annual fee must have at most two decimal places.")
+            raise ToolError("Annual fee must have at most two decimal places.")
         try:
             with _database_backend().connect(read_only=False) as conn:
                 # Serialize saves for this owner, including concurrent retries.
@@ -164,7 +211,7 @@ def add_card_tool(owner):
             return {"status": "saved", "card": card}
         except psycopg.Error:
             # Database errors can contain owner identifiers and connection details.
-            raise ValueError("Could not save the card. Please try again later.") from None
+            raise ToolError("Could not save the card. Please try again later.") from None
 
     return add_portfolio_card
 
@@ -226,6 +273,18 @@ def create_app(slug=None, funnel_host=None, port=None):
         for name in PUBLIC_TOOLS:
             mcp.add_tool(getattr(source, name), annotations=source.READ_ONLY)
         mcp.add_tool(portfolio_tool(owner), annotations=source.READ_ONLY)
+        programs, read_balances, save_balance = balance_tools(owner)
+        mcp.add_tool(programs, annotations=source.READ_ONLY)
+        mcp.add_tool(read_balances, annotations=source.READ_ONLY)
+        mcp.add_tool(
+            save_balance,
+            annotations=ToolAnnotations(
+                readOnlyHint=False,
+                destructiveHint=True,
+                idempotentHint=True,
+                openWorldHint=False,
+            ),
+        )
         mcp.add_tool(
             add_card_tool(owner),
             annotations=ToolAnnotations(

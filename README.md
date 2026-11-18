@@ -25,9 +25,8 @@ link to your app, then start a conversation using the examples below.
 2. Add the URL to an app supporting remote Streamable HTTP MCP connections
    (see [Supported apps](#supported-apps-including-ios)).
 3. Send: **Help me add my cards to my portfolio so you can tailor your answers to me.**
-   You can also select **Set up my portfolio** from the app's MCP prompt picker.
-4. List your cards in ordinary language. Start with whatever you know; the assistant
-   will ask for missing details before saving each card.
+4. List your cards in ordinary language. Start with whatever you know, and ballpark
+   answers are fine. The assistant will ask for anything it still needs.
 5. Ask **Show me my saved portfolio** and check that the cards and details are correct.
    The assistant should confirm a save only after it succeeds.
 6. Ask **Based on my saved portfolio, which card should I consider next?** Add your
@@ -62,20 +61,31 @@ You do not need to fill out a form or know a tool command. For example:
 > I'd like to add my portfolio. I have a Chase Sapphire Preferred and an Amex Gold.
 > Walk me through the details you need, save my cards, then show me what was saved.
 
-For each card, the assistant needs:
+#### Suggested information for the assistant (ballpark dates and details are fine)
 
 | Detail | Why it helps |
 | --- | --- |
 | Issuer and card name | Identifies what you already hold. |
-| Opening date | Provides context for application timing and account history. |
-| Annual fee | Helps evaluate the cost of keeping a card. |
-| Personal or business card | Helps distinguish card types and relevant rules. |
-| Whether it reports to personal credit | Provides context for Chase 5/24 counting. |
+| Opening date | Application timing rules, such as Chase 5/24, depend on when cards were opened. "Around March 2023" or just "2023" works. |
+| Annual fee | Helps evaluate the cost of keeping a card. A rough figure is fine. |
+| Personal or business card | Different rules apply to each. |
+| Whether it reports to personal credit | Determines whether the card counts toward Chase 5/24. If you're unsure, the assistant can tell you what's typical for that card. |
 
-If you do not know a detail, say so. The assistant should help you identify what to
-check rather than invent a value. An incomplete card cannot be saved until its
-required details are supplied. Never provide full card numbers, security codes,
+Rough answers are much more useful than none. If you give an approximate opening
+date, the assistant saves the first of that month (or January 1 for a year alone)
+and tells you it's an estimate. The closer your answers, the more accurate the
+guidance, especially on timing rules.
+
+You can skip portfolio setup entirely, or leave a card out, and still ask questions;
+answers will just be less tailored to you. Each saved card currently needs all five
+details, so for a card you can't estimate, tell the assistant about it in the
+conversation instead of saving it. Never provide full card numbers, security codes,
 passwords, or account credentials.
+
+You can also save your points and miles totals, for example **Save my Chase Ultimate
+Rewards balance as 80,000 points.** A new amount replaces the old total for that
+program rather than adding to it, and the assistant notes the date each balance was
+recorded. These are numbers you report, not a live connection to your accounts.
 
 ### After your portfolio is saved
 
@@ -89,8 +99,8 @@ future conversations using that connection. You can say:
 | What else do you need to assess my eligibility for this bonus? | Uses saved account history and identifies missing facts rather than assuming eligibility. |
 | Show my saved cards, then help me add a new one. | Reviews existing entries before saving another card. |
 
-Saving cards does not automatically provide balances, spending history, benefit
-usage, or past bonus details. Share relevant context when asked. Goals and spending
+Saving cards does not provide spending history, benefit usage, or past bonus details,
+and points balances are only what you have saved. Share relevant context when asked. Goals and spending
 preferences help within the conversation but are not saved by this service.
 If a saved card needs correcting or removing, contact the maintainer; chat-based
 editing and deletion are not currently available.
@@ -98,16 +108,33 @@ editing and deletion are not currently available.
 ### Other ways to get started
 
 You can ask research questions immediately; portfolio setup is optional. Connecting
-alone does not send a chat message. The app controls whether it displays MCP prompts.
-The getting-started prompt requests a brief welcome once in the current conversation;
-there is no cross-session welcome tracker or automatic welcome on connection.
+alone does not send a chat message, so start by typing what you want in your own words.
+The phrases below are a good starting point, and most people will simply type these:
 
-| Starter prompt | Copy-and-paste alternative | Purpose |
+| Type this | What happens |
+| --- | --- |
+| Help me get started with card rewards research. | A brief welcome, then a choice of portfolio setup, next-card research, or redemption analysis. |
+| Help me add my cards to my portfolio. | Checks cards you've already saved, then collects details for new ones. |
+| Based on my portfolio, which card should I consider next? | Combines your saved cards, your goals, and current research. |
+| Help me compare this points redemption with paying cash. | Collects the prices, points, and fees to evaluate the tradeoff. |
+
+**Starter prompts (optional).** Some apps also show a menu of prompts provided by
+the connection. Picking one sends the assistant a longer, prewritten instruction for
+the same task:
+
+| Menu item | Prompt name | Equivalent to typing |
 | --- | --- | --- |
-| `getting_started` | Help me get started with card rewards research. | Offers portfolio setup, next-card research, or redemption analysis. |
-| `build_portfolio` | Help me add my cards to my portfolio. | Checks saved cards and collects missing entry details. |
-| `next_card` | Based on my portfolio, which card should I consider next? | Combines saved cards, your goals, and relevant research. |
-| `evaluate_redemption` | Help me compare this points redemption with paying cash. | Collects prices, points, and fees to evaluate the tradeoff. |
+| Get started | `getting_started` | Help me get started with card rewards research. |
+| Set up my portfolio | `build_portfolio` | Help me add my cards to my portfolio. |
+| Explore my next card | `next_card` | Based on my portfolio, which card should I consider next? |
+| Evaluate a points redemption | `evaluate_redemption` | Help me compare this points redemption with paying cash. |
+
+The menu version is a little more consistent because it spells out every step, such
+as checking your saved cards before asking for them again. The service's standing
+instructions already cover the same behavior, though, so typing works just as well.
+Whether the menu appears, and where, depends on your app; many mobile apps don't
+show it. The getting-started prompt asks for a welcome once per conversation; there
+is no automatic welcome when you connect.
 
 Example card entry:
 
@@ -115,7 +142,7 @@ Example card entry:
 > card that reports to personal credit.
 
 The assistant is instructed to answer first and suggest adding a portfolio only when
-useful, at most once per conversation. It uses existing card details before requesting
+useful: at most twice per conversation, and not again once you decline. It uses existing card details before requesting
 them again. Wording and tool approvals depend on the app and model.
 
 ## Capabilities
@@ -123,6 +150,10 @@ them again. Wording and tool approvals depend on the app and model.
 Shared research covers offers, points valuations, data points, booking windows,
 offer history, retention, and reconsideration. `get_portfolio` reads the connection's
 cards; `add_portfolio_card` saves cards explicitly supplied by the user.
+`get_point_balances` and `set_point_balance` read and record the connection's points
+totals by program, and `list_point_programs` lists the supported program codes. A
+balance save replaces that program's total and is rejected if a newer-dated balance
+already exists.
 
 Matching issuer, product, and opening date returns the existing card without changing
 it. Issuer and product matching is case-insensitive. Saves through this adapter are
@@ -140,11 +171,11 @@ schema (including the owner migration), research data, and its embedding service
 Follow backend documentation for migrations, ingestion, and embeddings. This adapter
 does not populate the research database on startup.
 
-From this repository, using PowerShell:
+From this repository (macOS or Linux):
 
-```powershell
+```bash
 uv sync --extra backend
-Copy-Item .env.example .env
+cp .env.example .env
 uv run --no-sync python -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
@@ -171,19 +202,20 @@ CHURNING_OWNER=public-unused
 | `MCP_PORTFOLIO_OWNERS` | Legacy validation list, normally `[]`. All configured links have portfolio access; listed keys must still exist. |
 
 Secrets must be unique, URL-safe strings of 32-128 characters. The database role needs
-SELECT on research tables, SELECT and INSERT on `cards`, and USAGE on its ID sequence.
+SELECT on research tables and `programs`, SELECT and INSERT on `cards`, USAGE on its
+ID sequence, and SELECT, INSERT, and UPDATE on `point_balances`.
 Research tools use read-only connections.
 
 Start the service:
 
-```powershell
+```bash
 uv run --no-sync public-mcp
 ```
 
 It binds to `127.0.0.1`. For Tailscale Funnel, configure Funnel access and expose the
 local port from a second terminal:
 
-```powershell
+```bash
 tailscale funnel --bg 8000
 tailscale funnel status
 ```
@@ -214,15 +246,17 @@ The map key is stored in `cards.owner`. Ownership is fixed server-side; callers 
 choose another owner. Keys and secrets are internal identifiers, and assistant
 instructions prohibit using them as names or greetings.
 
-A URL is a bearer credential: anyone holding it can read and add cards for its owner.
+A URL is a bearer credential: anyone holding it can read and add cards, and read and
+replace points balances, for its owner.
 Preserve owner keys when rotating secrets and do not reassign an existing key to a
 different person. Keep `.env`, data, and private URLs out of this public repository.
 Access logging is disabled; avoid recording secret URLs in proxies. Host and origin
 validation is enabled.
 
-Research tools use the explicit `PUBLIC_TOOLS` allowlist. Upstream personal transaction,
-balance, and planning tools are excluded. Personalized answers combine the scoped
-portfolio read with shared research.
+Research tools use the explicit `PUBLIC_TOOLS` allowlist. Upstream personal transaction
+and planning tools are excluded; portfolio and points-balance tools are reimplemented
+here with the owner fixed per connection. Personalized answers combine those scoped
+reads with shared research.
 
 ## Contributing and CI
 
