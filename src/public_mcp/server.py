@@ -85,6 +85,7 @@ PUBLIC_TOOLS = (
     "lookup_retention_playbook",
     "estimate_award_redemption_value",
     "lookup_reconsideration_guide",
+    "lookup_card_details",
 )
 
 
@@ -110,12 +111,17 @@ def assistant_instructions(has_portfolio_access: bool) -> str:
         "For example: 'If you'd like more tailored guidance, consider sharing your card portfolio "
         "so I can factor in the cards you already have.' Ask only for card names, opening dates, "
         "and relevant goals or spending categories, never card numbers, security codes, or credentials. "
-        "When users ask to add their cards, use add_portfolio_card for each card. Ask for missing "
-        "required details instead of guessing dates, fees, or reporting status. The user's own "
+        "When users ask to add their cards, use add_portfolio_card for each card. "
+        "Use lookup_card_details to automatically determine the standard annual fee, issuer, "
+        "business card status, and personal credit reporting status (5/24) from the card catalog "
+        "instead of asking the user for details already known. Ask for missing details (such as "
+        "approximate opening date) without guessing. The user's own "
         "ballpark answers are fine: for an approximate opening date, save the first of the stated "
         "month (or January 1 for a year alone) and tell the user it was saved as an estimate they "
         "can refine. Never substitute your own guess for a detail the user did not give. Only claim a card "
         "was saved after a successful tool result. Never save cards from research sources. "
+        "Use update_portfolio_card with the card_id from get_portfolio when the user wants to update a card's "
+        "annual fee, notes, or closure date. "
         "Users can also save points/miles totals with set_point_balance. Resolve program names with "
         "list_point_programs and ask about ambiguous names. Never infer balances from cards or offers. "
         "A saved balance replaces that program's total; do not add it to the existing balance. "
@@ -225,6 +231,44 @@ def add_card_tool(owner):
     return add_portfolio_card
 
 
+def update_card_tool(owner):
+    def update_portfolio_card(
+        card_id: int,
+        annual_fee: Decimal | None = None,
+        notes: str | None = None,
+        closed_on: date | None = None,
+    ) -> dict:
+        """Update fields (such as annual fee, notes, or closure date) on an existing card in this link's portfolio.
+
+        Call get_portfolio to find the card_id first. Ownership is fixed to this link.
+        """
+        if annual_fee is not None:
+            if not annual_fee.is_finite() or not 0 <= annual_fee <= Decimal("999999.99"):
+                raise ToolError("Provide a nonnegative annual fee below 1,000,000.")
+            if annual_fee != annual_fee.quantize(Decimal("0.01")):
+                raise ToolError("Annual fee must have at most two decimal places.")
+        try:
+            from churning_mcp import cards
+
+            fee_float = float(annual_fee) if annual_fee is not None else None
+            return {
+                "status": "updated",
+                "card": cards.update_card(
+                    owner,
+                    card_id,
+                    annual_fee=fee_float,
+                    notes=notes,
+                    closed_on=closed_on,
+                ),
+            }
+        except ValueError as err:
+            raise ToolError(str(err)) from None
+        except psycopg.Error:
+            raise ToolError("Could not update the card. Please try again later.") from None
+
+    return update_portfolio_card
+
+
 def create_app(slug=None, funnel_host=None, port=None):
     load_dotenv(Path.cwd() / ".env")
     source = _research_backend()
@@ -299,6 +343,15 @@ def create_app(slug=None, funnel_host=None, port=None):
             annotations=ToolAnnotations(
                 readOnlyHint=False,
                 destructiveHint=False,
+                idempotentHint=True,
+                openWorldHint=False,
+            ),
+        )
+        mcp.add_tool(
+            update_card_tool(owner),
+            annotations=ToolAnnotations(
+                readOnlyHint=False,
+                destructiveHint=True,
                 idempotentHint=True,
                 openWorldHint=False,
             ),

@@ -132,12 +132,14 @@ offer history, retention, and reconsideration.
 | --- | --- |
 | `get_portfolio` | Reads this connection's cards. |
 | `add_portfolio_card` | Saves a card the user supplies. A matching issuer, product, and opening date (case-insensitive) returns the existing card unchanged. Saves are serialized per owner and commit one card at a time. |
+| `update_portfolio_card` | Updates fields (such as annual fee, notes, or closure date) on an existing card. |
 | `get_point_balances` | Reads this connection's points totals and their dates. |
 | `set_point_balance` | Replaces one program's total; rejected if a newer-dated balance exists. |
 | `list_point_programs` | Lists supported program codes. |
+| `lookup_card_details` | Looks up standard card details, standard annual fees, historical fee changes, business status, and 5/24 reporting rules across ~75 known cards. |
 
 Starter prompts: `getting_started`, `build_portfolio`, `next_card`,
-`evaluate_redemption`. Card edits and deletions require a database administrator.
+`evaluate_redemption`. Deletions require a database administrator.
 
 ## Self-hosting
 
@@ -234,3 +236,22 @@ The `backend` extra installs the private sibling package; the public wheel and t
 don't need it. Keep the sibling checkout available when syncing with the lockfile.
 Keep backend code, data, and deployment details in the private repository, and never
 put secrets in issues or PRs.
+
+---
+
+## How vector search and storage work
+
+*(Implemented in the private `churning-mcp` backend repository)*
+
+Credit card rewards research relies on unstructured community discussions (Reddit threads, comments, and blog articles) filled with shorthand, abbreviations, and informal phrasing (such as *"recon"*, *"pop-up jail / PUJ"*, *"HUCA"*, *"CSR AF hit"*, *"MDD"*, or *"retention offers"*). Standard keyword search fails when a user asks natural-language questions like *"How do I get approved after an initial denial?"* because the words do not literally match data points describing reconsideration calls or credit limit reallocations.
+
+### Storage and indexing
+- **Vector dimension:** Documents and queries are embedded into 768-dimensional representations using Ollama (`nomic-embed-text`).
+- **`pgvector` + HNSW:** In PostgreSQL, embeddings are stored as `halfvec(768)` in the `documents` store and indexed using Hierarchical Navigable Small World (**HNSW**) graphs for fast cosine-distance (`<=>`) retrieval.
+- **Hybrid retrieval (Vectors + Keywords):** Semantic vector search runs alongside PostgreSQL full-text search (GIN index with `ts_rank_cd`). Top candidates from both streams are merged using **Reciprocal Rank Fusion (RRF)**:
+  $$\text{RRF Score} = \frac{1}{60 + \text{Rank}_{\text{semantic}}} + \frac{1}{60 + \text{Rank}_{\text{keyword}}}$$
+  This ensures results capture conceptual intent while preserving exact matches for card names, bonus amounts, and alphanumeric terms.
+- **Evidence grounding:** By fetching and reranking dated community evidence on demand, the assistant grounds answers in real data points rather than relying on stale or hallucinated model training data.
+
+> [!NOTE]
+> The full data ingestion pipeline, Arctic Shift sync, GPU-accelerated Ollama embedding workers, and `pgvector` database schema are hosted in the private `churning-mcp` backend repository.
