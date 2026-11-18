@@ -38,6 +38,7 @@ def test_links_and_tools(monkeypatch):
             assert {t["name"] for t in result["tools"]} == set(PUBLIC_TOOLS) | {
                 "get_portfolio",
                 "add_portfolio_card",
+                "update_portfolio_card",
                 "list_point_programs",
                 "get_point_balances",
                 "set_point_balance",
