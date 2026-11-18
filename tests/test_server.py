@@ -1,7 +1,7 @@
 import pytest
 from starlette.testclient import TestClient
 
-from server import PUBLIC_TOOLS, create_app
+from public_mcp.server import PUBLIC_TOOLS, create_app
 
 A = "a" * 43
 B = "b" * 43
@@ -19,9 +19,7 @@ def rpc(client, secret, method, params=None):
 def test_links_and_tools(monkeypatch):
     monkeypatch.setenv("MCP_PORTFOLIO_OWNERS", "[]")
     monkeypatch.setenv("MCP_SECRET_SLUGS", '{"alice": "' + A + '", "bob": "' + B + '"}')
-    with TestClient(
-        create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net"
-    ) as client:
+    with TestClient(create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net") as client:
         for secret in (A, B):
             response = rpc(
                 client,
@@ -34,6 +32,8 @@ def test_links_and_tools(monkeypatch):
                 },
             )
             assert response.status_code == 200
+            assert "prompts" in response.json()["result"]["capabilities"]
+            assert len(rpc(client, secret, "prompts/list").json()["result"]["prompts"]) == 4
             result = rpc(client, secret, "tools/list").json()["result"]
             assert {t["name"] for t in result["tools"]} == set(PUBLIC_TOOLS) | {
                 "get_portfolio",
@@ -43,16 +43,9 @@ def test_links_and_tools(monkeypatch):
         assert client.get("/wrong/mcp").status_code == 404
         assert client.get("/mcp").status_code == 404
         assert rpc(client, A, "tools/list").status_code == 200
-        assert (
-            client.post(
-                f"/{A}/mcp", headers={**HEADERS, "host": "evil.test"}, json={}
-            ).status_code
-            == 421
-        )
+        assert client.post(f"/{A}/mcp", headers={**HEADERS, "host": "evil.test"}, json={}).status_code == 421
     monkeypatch.setenv("MCP_SECRET_SLUGS", '{"bob": "' + B + '"}')
-    with TestClient(
-        create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net"
-    ) as client:
+    with TestClient(create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net") as client:
         assert rpc(client, A, "tools/list").status_code == 404
         assert rpc(client, B, "tools/list").status_code == 200
 
@@ -70,9 +63,7 @@ def test_assistant_guidance_and_private_labels(monkeypatch):
     owners = {"private-owner-label": A, "private-friend-label": B}
     monkeypatch.setenv("MCP_SECRET_SLUGS", json.dumps(owners))
     monkeypatch.setenv("MCP_PORTFOLIO_OWNERS", '["private-owner-label"]')
-    with TestClient(
-        create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net"
-    ) as client:
+    with TestClient(create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net") as client:
         for secret in (A, B):
             response = rpc(
                 client,
@@ -104,7 +95,9 @@ def test_portfolio_isolation(monkeypatch):
     import json
     from concurrent.futures import ThreadPoolExecutor
 
-    from server import source
+    from public_mcp.server import _research_backend
+
+    source = _research_backend()
 
     monkeypatch.setenv("MCP_SECRET_SLUGS", json.dumps({"kumprj": A, "friend02": B}))
     monkeypatch.setenv("MCP_PORTFOLIO_OWNERS", '["kumprj"]')
@@ -115,21 +108,14 @@ def test_portfolio_isolation(monkeypatch):
         return [{"product": params[0] + " card"}]
 
     monkeypatch.setattr(source, "_query", query)
-    with TestClient(
-        create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net"
-    ) as client:
+    with TestClient(create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net") as client:
         tools = rpc(client, A, "tools/list").json()["result"]["tools"]
         portfolio = next(t for t in tools if t["name"] == "get_portfolio")
         assert "owner" not in portfolio["inputSchema"]["properties"]
-        assert all(
-            t["name"] != "nonexistent_tool"
-            for t in rpc(client, B, "tools/list").json()["result"]["tools"]
-        )
+        assert all(t["name"] != "nonexistent_tool" for t in rpc(client, B, "tools/list").json()["result"]["tools"])
 
         def call(secret):
-            return rpc(
-                client, secret, "tools/call", {"name": "get_portfolio", "arguments": {}}
-            ).json()["result"]
+            return rpc(client, secret, "tools/call", {"name": "get_portfolio", "arguments": {}}).json()["result"]
 
         with ThreadPoolExecutor() as pool:
             results = list(pool.map(call, [A, B] * 5))
@@ -143,7 +129,9 @@ def test_add_card_owner_and_retry(monkeypatch):
     from datetime import date
     from decimal import Decimal
 
-    from server import add_card_tool, db
+    from public_mcp.server import _database_backend, add_card_tool
+
+    db = _database_backend()
 
     saved = {}
 
