@@ -38,6 +38,9 @@ def test_links_and_tools(monkeypatch):
             assert {t["name"] for t in result["tools"]} == set(PUBLIC_TOOLS) | {
                 "get_portfolio",
                 "add_portfolio_card",
+                "list_point_programs",
+                "get_point_balances",
+                "set_point_balance",
             }
 
         assert client.get("/wrong/mcp").status_code == 404
@@ -78,7 +81,7 @@ def test_assistant_guidance_and_private_labels(monkeypatch):
             assert response.status_code == 200
             instructions = response.json()["result"]["instructions"]
             assert "Answer the user's question first" in instructions
-            assert "at most once per conversation" in instructions
+            assert "at most twice per conversation and never more" in instructions
             assert "Never use MCP_SECRET_SLUGS keys or values" in instructions
             assert "use add_portfolio_card" in instructions
             if secret == A:

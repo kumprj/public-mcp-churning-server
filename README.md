@@ -1,155 +1,142 @@
 ﻿# Public Churning MCP
 
-Get credit card rewards guidance that takes the cards you already hold into account.
-Connect this service to your AI app, tell the assistant about your cards, and ask it
-to save your portfolio. It can then use those details when you ask about your next
-card, annual fees, bonuses, or rewards.
+Credit card rewards guidance that accounts for the cards you already have. Connect
+this MCP server to your AI app, tell the assistant about your cards, and it will use
+them when you ask about your next card, annual fees, bonuses, or rewards.
 
-Without your portfolio, answers are based on general research and what you share in
-the current conversation. With a saved portfolio, the assistant can check your
-existing cards, opening dates, and fees before answering. This helps it avoid
-suggesting a card you already have and identify missing information relevant to
-eligibility or value. It does not guarantee approval or bonus eligibility.
+Without a saved portfolio, answers rely on general research and what you say in the
+conversation. With one, the assistant checks your cards, opening dates, and fees
+first, so it won't suggest a card you already have and can point out missing
+eligibility details. It can't guarantee approval or bonuses.
 
-**Hosted access is available upon request for now.** Contact the maintainer through
-the channel where you learned about this project to request a private connection
-link. There is no self-service signup. Never post connection URLs or personal card
-details in public issues.
+**MCP access is available upon request. General availability is coming soon after
+the beta period.** Ask the maintainer for a private connection link through the
+channel where you found this project. There's nothing to install. Never post your
+link or card details in public issues.
 
-With a hosted connection, you do not need to install Python or run a server. Add the
-link to your app, then start a conversation using the examples below.
+## Getting started
 
-## Recommended Getting Started Flow
+1. Get your private connection URL.
+2. Add it to a [supported app](#supported-apps). Paste the whole URL; there's no
+   separate sign-in.
+3. Say: **Help me add my cards to my portfolio.**
+4. Describe your cards in plain language. Ballpark answers are fine, and the
+   assistant will ask for anything missing.
+5. Say **Show me my saved portfolio** to check what was saved.
+6. Ask **Which card should I consider next?** and mention your goal, such as cash
+   back or an upcoming trip.
 
-1. Request access and receive your private connection URL.
-2. Add the URL to an app supporting remote Streamable HTTP MCP connections
-   (see [Supported apps](#supported-apps-including-ios)).
-3. Send: **Help me add my cards to my portfolio so you can tailor your answers to me.**
-   You can also select **Set up my portfolio** from the app's MCP prompt picker.
-4. List your cards in ordinary language. Start with whatever you know; the assistant
-   will ask for missing details before saving each card.
-5. Ask **Show me my saved portfolio** and check that the cards and details are correct.
-   The assistant should confirm a save only after it succeeds.
-6. Ask **Based on my saved portfolio, which card should I consider next?** Add your
-   goal, such as cash back or a planned trip, so the answer can be more useful.
+### Supported apps
 
-### Supported apps, including iOS
+| App | Plan required | Where to add the URL |
+| --- | --- | --- |
+| Claude | Free includes 1 custom connector; unlimited on Pro, Max, Team, and Enterprise | In the iOS app, web, or desktop: **Customize → Connectors → Add custom connector** |
+| Gemini | Free for personal Google accounts in the US, 18+, with **Keep Activity** on | On the web at gemini.google.com: **Settings → Connected Apps → Add a custom app**; it then appears on iOS |
+| ChatGPT | Paid or workspace plans | On the web at chatgpt.com: **Settings → Plugins → Add custom MCP server**; it then works in mobile chats |
+| Perplexity | Pro, Max, or Enterprise | On the web or desktop: **Account Settings → Connectors**; synced to your account |
+| Third-party iOS MCP clients | Free, using your own AI provider API key | Add the URL in apps such as ChatMCP or Joey MCP Client |
 
-Any app that supports custom remote MCP connectors can use your connection URL.
-Paste the full URL exactly as you received it; it already contains your private
-access link, so no extra sign-in or token is needed.
+On iOS, Claude is the simplest: you paste the URL right in the app, and the free plan
+covers it. Gemini is the best free alternative where available. ChatGPT and
+Perplexity need a paid plan and a web browser for setup. This reflects November 2026;
+plans and menus change, so check each app's help pages.
 
-| App | Custom remote MCP support | Plan required | Where to add the URL |
-| --- | --- | --- | --- |
-| Claude | Yes, natively in the iOS app and synced across devices | Free includes 1 custom connector; unlimited on Pro, Max, Team, and Enterprise | In the Claude iOS app, web, or desktop: **Customize → Connectors → Add custom connector**. |
-| Gemini | Yes, added on the web and synced to iOS | Free for personal Google accounts in the US, 18+, with **Keep Activity** on | In a browser at gemini.google.com: **Settings → Connected Apps → Add a custom app**. It then appears in the iOS app. |
-| ChatGPT | Yes, as plugins/MCP apps, synced to iOS | Paid or workspace plans; not consumer Free | On the web at chatgpt.com: **Settings → Plugins → Add custom MCP server**. Then use it in mobile chats. |
-| Perplexity | Yes, as custom remote connectors | Paid plans (Pro, Max, Enterprise); not Free | On the web or desktop: **Account Settings → Connectors**. Synced across your account. |
-| Third-party iOS MCP clients | Yes, as full native MCP clients | Free, using your own AI provider API key | App Store clients such as ChatMCP or Joey MCP Client let you add custom MCP URLs directly on your phone. |
+### Suggested information (ballpark dates and details are fine)
 
-On iOS, Claude is the simplest option because you can paste the URL right in the
-app, and the free plan covers one custom connector. Gemini is the best free
-alternative where it is available. ChatGPT and Perplexity work if you already pay
-for them, but you add the URL in a web browser first.
+You don't need a form or special commands. For example:
 
-This table reflects availability as of November 2026. Plans, regions, and menu
-names change often, so check each app's current help pages before choosing one.
-
-### What to tell the assistant
-
-You do not need to fill out a form or know a tool command. For example:
-
-> I'd like to add my portfolio. I have a Chase Sapphire Preferred and an Amex Gold.
-> Walk me through the details you need, save my cards, then show me what was saved.
-
-For each card, the assistant needs:
+> I have a Chase Sapphire Preferred I opened around March 2023 and an Amex Gold from
+> last year. Walk me through what you need, save them, and show me what was saved.
 
 | Detail | Why it helps |
 | --- | --- |
-| Issuer and card name | Identifies what you already hold. |
-| Opening date | Provides context for application timing and account history. |
-| Annual fee | Helps evaluate the cost of keeping a card. |
-| Personal or business card | Helps distinguish card types and relevant rules. |
-| Whether it reports to personal credit | Provides context for Chase 5/24 counting. |
+| Issuer and card name | Identifies what you already have. |
+| Opening date | Timing rules such as Chase 5/24 depend on it. "Around March 2023" or "2023" works. |
+| Annual fee | Shows what each card costs to keep. A rough figure is fine. |
+| Personal or business | Different rules apply to each. |
+| Reports to personal credit | Decides whether a card counts toward 5/24. If you're unsure, the assistant can tell you what's typical. |
 
-If you do not know a detail, say so. The assistant should help you identify what to
-check rather than invent a value. An incomplete card cannot be saved until its
-required details are supplied. Never provide full card numbers, security codes,
-passwords, or account credentials.
+An approximate date is saved as the first of that month (January 1 for a year alone),
+and the assistant tells you it's an estimate. Closer answers mean more accurate
+guidance, especially on timing rules.
 
-### After your portfolio is saved
+You can skip a card, or setup entirely, and still ask questions; answers will just be
+less personal. A saved card needs all five details, so mention any card you can't
+estimate in the conversation instead. Never share card numbers, security codes,
+passwords, or logins.
 
-Your cards are associated with your private connection and remain available in
-future conversations using that connection. You can say:
+### Points balances
 
-| Ask the assistant | How your portfolio helps |
+Say **Save my Chase Ultimate Rewards balance as 80,000 points.** A new amount replaces
+the old one, and the assistant notes when each balance was recorded. These are numbers
+you report, not a live connection to your accounts.
+
+### Using your portfolio
+
+Saved cards and balances stay with your connection across conversations. Try:
+
+| Ask | How your portfolio helps |
 | --- | --- |
-| Given my cards, what should I consider next for a hotel trip? | Grounds research in your existing cards, then asks about your travel goals. |
-| Help me evaluate whether my annual fees are worth paying. | Starts with saved fees and asks which benefits you actually use. |
-| What else do you need to assess my eligibility for this bonus? | Uses saved account history and identifies missing facts rather than assuming eligibility. |
-| Show my saved cards, then help me add a new one. | Reviews existing entries before saving another card. |
+| Given my cards, what should I get next for a hotel trip? | Starts from your cards, then asks about your trip. |
+| Are my annual fees worth paying? | Starts from your saved fees and asks which benefits you use. |
+| What else do you need to check my eligibility for this bonus? | Uses your card history and names the missing facts. |
+| Show my saved cards, then help me add a new one. | Reviews what's saved before adding more. |
 
-Saving cards does not automatically provide balances, spending history, benefit
-usage, or past bonus details. Share relevant context when asked. Goals and spending
-preferences help within the conversation but are not saved by this service.
-If a saved card needs correcting or removing, contact the maintainer; chat-based
-editing and deletion are not currently available.
+Goals, spending, and benefit usage aren't saved, so share them when asked. To correct
+or remove a saved card, contact the maintainer.
 
-### Other ways to get started
+### Ways to start a conversation
 
-You can ask research questions immediately; portfolio setup is optional. Connecting
-alone does not send a chat message. The app controls whether it displays MCP prompts.
-The getting-started prompt requests a brief welcome once in the current conversation;
-there is no cross-session welcome tracker or automatic welcome on connection.
+Connecting doesn't send a message, and you can ask research questions right away. Most
+people just type one of these:
 
-| Starter prompt | Copy-and-paste alternative | Purpose |
+| Type this | Or pick from the prompt menu | What happens |
 | --- | --- | --- |
-| `getting_started` | Help me get started with card rewards research. | Offers portfolio setup, next-card research, or redemption analysis. |
-| `build_portfolio` | Help me add my cards to my portfolio. | Checks saved cards and collects missing entry details. |
-| `next_card` | Based on my portfolio, which card should I consider next? | Combines saved cards, your goals, and relevant research. |
-| `evaluate_redemption` | Help me compare this points redemption with paying cash. | Collects prices, points, and fees to evaluate the tradeoff. |
+| Help me get started with card rewards research. | Get started | A brief welcome, then a choice of what to do next. |
+| Help me add my cards to my portfolio. | Set up my portfolio | Checks saved cards, then collects new ones. |
+| Based on my portfolio, which card should I consider next? | Explore my next card | Combines your cards, goals, and current research. |
+| Help me compare this points redemption with paying cash. | Evaluate a points redemption | Collects prices, points, and fees to compare. |
 
-Example card entry:
+Some apps show a prompt menu for the connection; many mobile apps don't. A menu item
+sends a longer, prewritten version of the same request, which can be slightly more
+consistent, but typing works just as well.
 
-> Add my Chase Sapphire Preferred, opened 2025-03-15, annual fee $95, a personal
-> card that reports to personal credit.
+The assistant answers your question first and suggests adding a portfolio only when
+it would help: at most twice per conversation, and not after you decline.
 
-The assistant is instructed to answer first and suggest adding a portfolio only when
-useful, at most once per conversation. It uses existing card details before requesting
-them again. Wording and tool approvals depend on the app and model.
+## Tools
 
-## Capabilities
+Shared research covers offers, point valuations, data points, award booking windows,
+offer history, retention, and reconsideration.
 
-Shared research covers offers, points valuations, data points, booking windows,
-offer history, retention, and reconsideration. `get_portfolio` reads the connection's
-cards; `add_portfolio_card` saves cards explicitly supplied by the user.
+| Tool | Purpose |
+| --- | --- |
+| `get_portfolio` | Reads this connection's cards. |
+| `add_portfolio_card` | Saves a card the user supplies. A matching issuer, product, and opening date (case-insensitive) returns the existing card unchanged. Saves are serialized per owner and commit one card at a time. |
+| `get_point_balances` | Reads this connection's points totals and their dates. |
+| `set_point_balance` | Replaces one program's total; rejected if a newer-dated balance exists. |
+| `list_point_programs` | Lists supported program codes. |
 
-Matching issuer, product, and opening date returns the existing card without changing
-it. Issuer and product matching is case-insensitive. Saves through this adapter are
-serialized per owner. Each card commits separately, so a later failure does not undo
-earlier additions. Updates and deletions currently require administrative database edits.
+Starter prompts: `getting_started`, `build_portfolio`, `next_card`,
+`evaluate_redemption`. Card edits and deletions require a database administrator.
 
 ## Self-hosting
 
-This repository contains the HTTP adapter and starter prompts. The research backend,
-database schema, and ingestion pipeline live in the separate private `churning-mcp`
-repository. Self-hosting requires authorized access to that backend.
+This repository is the HTTP adapter. The research backend, database schema, and
+ingestion pipeline live in the private `churning-mcp` repository, so self-hosting
+requires access to it.
 
-Requirements: Python 3.12+, `uv`, the private backend at `../churning-mcp`, its PostgreSQL
-schema (including the owner migration), research data, and its embedding service.
-Follow backend documentation for migrations, ingestion, and embeddings. This adapter
-does not populate the research database on startup.
+Requirements: Python 3.12+, `uv`, the backend checked out at `../churning-mcp`, its
+PostgreSQL schema and research data, and its embedding service. See the backend docs
+for migrations, ingestion, and embeddings; this adapter doesn't populate the database.
 
-From this repository, using PowerShell:
-
-```powershell
+```bash
 uv sync --extra backend
-Copy-Item .env.example .env
-uv run --no-sync python -c "import secrets; print(secrets.token_urlsafe(32))"
+cp .env.example .env
+uv run --no-sync python -c "import secrets; print(secrets.token_urlsafe(32))"  # one per user
 ```
 
-Generate one secret per user. Configure `.env` using generated values in place of
-these placeholders:
+Fill in `.env`:
 
 ```dotenv
 MCP_SECRET_SLUGS='{"user-one":"<generated-secret>","user-two":"<another-generated-secret>"}'
@@ -160,96 +147,71 @@ CHURNING_OWNER=public-unused
 
 | Setting | Purpose |
 | --- | --- |
-| `MCP_SECRET_SLUGS` | JSON map of stable owner keys to unique secrets; takes precedence over `MCP_SECRET_SLUG`. |
-| `MCP_SECRET_SLUG` | Legacy single-link secret, using owner key `single`. |
-| `FUNNEL_HOST` | Public hostname without scheme, port, or path; used for host and origin validation. |
-| `PORT` | Local HTTP port, default `8000`. |
-| `DATABASE_URL` | Upstream PostgreSQL connection string. |
-| `CHURNING_OWNER` | Required upstream setting; use `public-unused`. Ownership is captured separately per connection. |
-| `OLLAMA_HOST` | Upstream embedding service address. |
-| `EMBED_MODEL` | Embedding model matching the research index. |
-| `MCP_PORTFOLIO_OWNERS` | Legacy validation list, normally `[]`. All configured links have portfolio access; listed keys must still exist. |
+| `MCP_SECRET_SLUGS` | JSON map of stable owner keys to unique secrets (URL-safe, 32-128 characters). Overrides `MCP_SECRET_SLUG`. |
+| `MCP_SECRET_SLUG` | Legacy single link, using owner key `single`. |
+| `FUNNEL_HOST` | Public hostname, no scheme, port, or path. Used for host and origin validation. |
+| `PORT` | Local port, default `8000`. |
+| `DATABASE_URL` | Backend PostgreSQL connection string. |
+| `CHURNING_OWNER` | Required by the backend; use `public-unused`. Ownership is set per connection. |
+| `OLLAMA_HOST`, `EMBED_MODEL` | Backend embedding service and the model matching the research index. |
+| `MCP_PORTFOLIO_OWNERS` | Legacy, normally `[]`. Every link has portfolio access; listed keys must exist. |
 
-Secrets must be unique, URL-safe strings of 32-128 characters. The database role needs
-SELECT on research tables, SELECT and INSERT on `cards`, and USAGE on its ID sequence.
-Research tools use read-only connections.
+The database role needs SELECT on research tables and `programs`; SELECT and INSERT
+on `cards` plus USAGE on its ID sequence; and SELECT, INSERT, and UPDATE on
+`point_balances`. Research tools use read-only connections.
 
-Start the service:
+Run the service from the directory containing `.env`. It binds to `127.0.0.1`; expose
+it with Tailscale Funnel from a second terminal:
 
-```powershell
+```bash
 uv run --no-sync public-mcp
-```
-
-It binds to `127.0.0.1`. For Tailscale Funnel, configure Funnel access and expose the
-local port from a second terminal:
-
-```powershell
 tailscale funnel --bg 8000
 tailscale funnel status
 ```
 
-Use your configured port if different. See the
-[Tailscale Funnel documentation](https://tailscale.com/docs/reference/tailscale-cli/funnel)
-for deployment requirements. The host and Python process must remain running.
-Give each user their corresponding URL: `https://<FUNNEL_HOST>/<secret>/mcp`.
-The service does not implement OAuth. Reconnect clients after server changes to
-refresh tools, prompts, and instructions.
+See the [Tailscale Funnel docs](https://tailscale.com/docs/reference/tailscale-cli/funnel)
+for setup. Each user's URL is `https://<FUNNEL_HOST>/<secret>/mcp`. There's no OAuth.
+After server changes, restart and have users reconnect to refresh tools and prompts.
 
-| Operation | Command or action |
+| Task | How |
 | --- | --- |
-| Start | `uv run --no-sync public-mcp` |
-| Restart | Stop the existing process, then start it again. |
-| Check tunnel | `tailscale funnel status` |
-| Stop Funnel HTTPS listener | `tailscale funnel --https=443 off` (affects that listener). |
-| Rotate access | Replace the secret value, restart, and distribute the new URL. Keep its owner key unchanged. |
-| Revoke access | Remove the map entry and restart. Saved cards are retained. |
-| Unit tests | `uv run pytest -q` (private backend calls are mocked). |
-| Build package | `uv build` |
-| Lint | `uv run ruff check .` |
-| Format check | `uv run ruff format --check .` |
+| Rotate access | Replace the secret, restart, and send the new URL. Keep the owner key. |
+| Revoke access | Remove the map entry and restart. Saved data is kept. |
+| Stop Funnel | `tailscale funnel --https=443 off` |
+| Test, lint, build | `uv run pytest -q`, `uv run ruff check .`, `uv run ruff format --check .`, `uv build` |
 
 ## Access and data isolation
 
-The map key is stored in `cards.owner`. Ownership is fixed server-side; callers cannot
-choose another owner. Keys and secrets are internal identifiers, and assistant
-instructions prohibit using them as names or greetings.
+Each map key becomes the stored owner for that link's cards and balances. Ownership
+is fixed server-side; no tool accepts an owner. The assistant is told never to use
+keys or secrets as names.
 
-A URL is a bearer credential: anyone holding it can read and add cards for its owner.
-Preserve owner keys when rotating secrets and do not reassign an existing key to a
-different person. Keep `.env`, data, and private URLs out of this public repository.
-Access logging is disabled; avoid recording secret URLs in proxies. Host and origin
-validation is enabled.
+A URL is a bearer credential: anyone with it can read and add that owner's cards and
+balances. Keep owner keys stable when rotating, and never reassign one to another
+person. Access logging is off; don't log secret URLs in proxies either.
 
-Research tools use the explicit `PUBLIC_TOOLS` allowlist. Upstream personal transaction,
-balance, and planning tools are excluded. Personalized answers combine the scoped
-portfolio read with shared research.
+Research tools come from an explicit `PUBLIC_TOOLS` allowlist, so new backend tools
+are never exposed by accident. The backend's personal transaction and planning tools
+are excluded.
 
 ## Contributing and CI
 
-`main` is protected: changes merge only through pull requests, and the
-`build-and-test` check from GitHub Actions must pass on a branch that is up to date
-with `main`. These rules apply to administrators too. Direct pushes, force pushes,
-and branch deletion are blocked. Reviewer approval is not required.
+`main` is protected, including for admins: changes merge only through pull requests,
+and the `build-and-test` check must pass on a branch up to date with `main`. Direct
+pushes, force pushes, and deletion are blocked. No reviewer approval is required.
 
-The GitHub Action builds a wheel and source distribution, installs the wheel, and
-runs the unit suite. It needs no private credentials and can run on fork pull requests.
-Tests use the real MCP SDK with mocked research/database boundaries. They do not
-exercise the private backend implementation or a live database.
-Live database permissions and tunnel connectivity require separate deployment checks.
+CI builds the wheel and sdist, installs the wheel, and runs the unit tests with the
+backend and database mocked. It needs no secrets. Database permissions and tunnel
+connectivity need separate checks after deployment.
 
 ```text
-src/public_mcp/       # Installable package: HTTP service and starter prompts
-tests/               # Unit tests and isolated backend fixtures
-.github/workflows/   # GitHub Actions build and unit tests
-pyproject.toml       # Dependencies, CLI, build, and test configuration
-server.py            # Compatibility launcher for existing deployments
+src/public_mcp/      # Package: HTTP service, tools, and starter prompts
+tests/               # Unit tests with mocked backend
+.github/workflows/   # CI
+server.py            # Compatibility launcher (also: public-mcp, python -m public_mcp)
 ```
 
-The `public-mcp` CLI and `python -m public_mcp` both start the service. Run from the
-directory containing your `.env`. The optional `backend` extra installs the private
-sibling package for runtime use; public wheel installation and unit tests do not
-require it. `uv` resolves the local backend source when managing the development
-environment, so keep the sibling checkout available when using the supplied lockfile.
-
-Keep backend implementation, operational data, and private deployment details in the
-private `churning-mcp` repository. Never attach secrets to public issues or PRs.
+The `backend` extra installs the private sibling package; the public wheel and tests
+don't need it. Keep the sibling checkout available when syncing with the lockfile.
+Keep backend code, data, and deployment details in the private repository, and never
+put secrets in issues or PRs.

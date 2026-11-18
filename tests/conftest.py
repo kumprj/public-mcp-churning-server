@@ -33,5 +33,7 @@ def isolated_backend(monkeypatch):
     database = SimpleNamespace(connect=unavailable)
     monkeypatch.setattr(server, "_research_backend", lambda: backend)
     monkeypatch.setattr(server, "_database_backend", lambda: database)
+    balances = SimpleNamespace(list_programs=unavailable, get_balances=unavailable, set_balances=unavailable)
+    monkeypatch.setattr(server, "_balances_backend", lambda: balances)
     monkeypatch.setattr(server, "load_dotenv", lambda *args, **kwargs: None)
     monkeypatch.setenv("MCP_PORTFOLIO_OWNERS", "[]")
