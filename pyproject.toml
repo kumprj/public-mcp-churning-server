@@ -1,11 +1,40 @@
 [project]
 name = "public-mcp"
 version = "0.1.0"
+description = "Remote MCP adapter for card rewards research and personal portfolios"
+readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["churning-mcp", "uvicorn>=0.30", "starlette>=0.40", "python-dotenv>=1"]
+dependencies = ["mcp>=2.3,<3", "psycopg[binary]>=3.2", "uvicorn>=0.30", "starlette>=0.40", "python-dotenv>=1"]
+
+[project.optional-dependencies]
+backend = ["churning-mcp"]
+
+[project.scripts]
+public-mcp = "public_mcp.server:main"
+
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/public_mcp"]
+
+# Explicit allowlist so local-only files (handoff notes, .env) never enter the sdist.
+[tool.hatch.build.targets.sdist]
+only-include = ["src", "tests", "server.py", "README.md", "pyproject.toml", ".env.example"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [tool.uv.sources]
 churning-mcp = { path = "../churning-mcp", editable = true }
 
 [dependency-groups]
 dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.8"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
