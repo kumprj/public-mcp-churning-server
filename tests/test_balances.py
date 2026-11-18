@@ -98,3 +98,17 @@ def test_card_validation_reason_reaches_the_model(monkeypatch, overrides, reason
     result = call_tool(monkeypatch, "add_portfolio_card", card | overrides)
     assert result["isError"]
     assert reason in result["content"][0]["text"]
+
+
+@pytest.mark.parametrize(
+    ("args", "reason"),
+    [
+        ({"card_id": -1}, "valid positive card ID"),
+        ({"card_id": 1, "annual_fee": "95.001"}, "at most two decimal places"),
+        ({"card_id": 1, "opened_on": "2999-01-01"}, "opening date cannot be in the future"),
+    ],
+)
+def test_update_card_validation_reason_reaches_the_model(monkeypatch, args, reason):
+    result = call_tool(monkeypatch, "update_portfolio_card", args)
+    assert result["isError"]
+    assert reason in result["content"][0]["text"]

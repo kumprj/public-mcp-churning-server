@@ -164,3 +164,179 @@ def test_add_card_owner_and_retry(monkeypatch):
     assert add_card_tool("first")(*args)["status"] == "already_exists"
     assert add_card_tool("second")(*args)["status"] == "saved"
     assert set(saved) == {"first", "second"}
+
+
+def test_health_endpoint(monkeypatch):
+    monkeypatch.setenv("MCP_SECRET_SLUGS", '{"alice": "' + A + '"}')
+    with TestClient(create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net") as client:
+        response = client.get("/health")
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}
+
+
+def test_update_portfolio_card_success_and_opened_on(monkeypatch):
+    from datetime import date
+    from types import SimpleNamespace
+
+    from public_mcp import server
+
+    monkeypatch.setenv("MCP_SECRET_SLUGS", '{"alice": "' + A + '"}')
+    cards_mock = SimpleNamespace()
+    updated = {}
+
+    def mock_update(owner, card_id, annual_fee=None, notes=None, closed_on=None, opened_on=None):
+        assert owner == "alice"
+        record = {
+            "id": card_id,
+            "annual_fee": annual_fee,
+            "notes": notes,
+            "closed_on": closed_on,
+            "opened_on": opened_on,
+        }
+        updated[card_id] = record
+        return record
+
+    cards_mock.update_card = mock_update
+    monkeypatch.setattr(server, "_cards_backend", lambda: cards_mock)
+
+    with TestClient(server.create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net") as client:
+        res = rpc(
+            client,
+            A,
+            "tools/call",
+            {
+                "name": "update_portfolio_card",
+                "arguments": {
+                    "card_id": 10,
+                    "annual_fee": "250.00",
+                    "notes": "Kept with retention offer",
+                    "closed_on": "2026-11-01",
+                    "opened_on": "2023-03-01",
+                },
+            },
+        ).json()["result"]
+        assert not res.get("isError")
+        assert updated[10]["annual_fee"] == 250.0
+        assert updated[10]["notes"] == "Kept with retention offer"
+        assert updated[10]["closed_on"] == date(2026, 11, 1)
+        assert updated[10]["opened_on"] == date(2023, 3, 1)
+
+
+def test_update_portfolio_card_validation(monkeypatch):
+    monkeypatch.setenv("MCP_SECRET_SLUGS", '{"alice": "' + A + '"}')
+    with TestClient(create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net") as client:
+        # Invalid card_id
+        res_id = rpc(
+            client,
+            A,
+            "tools/call",
+            {"name": "update_portfolio_card", "arguments": {"card_id": 0}},
+        ).json()["result"]
+        assert res_id["isError"]
+        assert "valid positive card ID" in res_id["content"][0]["text"]
+
+        # Invalid annual_fee decimal places
+        res_fee = rpc(
+            client,
+            A,
+            "tools/call",
+            {"name": "update_portfolio_card", "arguments": {"card_id": 1, "annual_fee": "95.555"}},
+        ).json()["result"]
+        assert res_fee["isError"]
+        assert "at most two decimal places" in res_fee["content"][0]["text"]
+
+        # Future opened_on
+        res_future = rpc(
+            client,
+            A,
+            "tools/call",
+            {"name": "update_portfolio_card", "arguments": {"card_id": 1, "opened_on": "2999-01-01"}},
+        ).json()["result"]
+        assert res_future["isError"]
+        assert "opening date cannot be in the future" in res_future["content"][0]["text"]
+
+
+def test_update_portfolio_card_owner_sanitization(monkeypatch):
+    from types import SimpleNamespace
+
+    from public_mcp import server
+
+    secret_owner = "super_secret_owner_key_xyz"
+    monkeypatch.setenv("MCP_SECRET_SLUGS", '{"' + secret_owner + '": "' + A + '"}')
+    cards_mock = SimpleNamespace()
+
+    def mock_update(owner, card_id, **kwargs):
+        raise ValueError(f"Card {card_id} not found in {owner}'s portfolio")
+
+    cards_mock.update_card = mock_update
+    monkeypatch.setattr(server, "_cards_backend", lambda: cards_mock)
+
+    with TestClient(server.create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net") as client:
+        res = rpc(
+            client,
+            A,
+            "tools/call",
+            {"name": "update_portfolio_card", "arguments": {"card_id": 999}},
+        ).json()["result"]
+        assert res["isError"]
+        text = res["content"][0]["text"]
+        assert "Card 999 not found in portfolio" in text
+        assert secret_owner not in text
+
+
+def test_update_portfolio_card_database_error_sanitization(monkeypatch):
+    from types import SimpleNamespace
+
+    import psycopg
+
+    from public_mcp import server
+
+    monkeypatch.setenv("MCP_SECRET_SLUGS", '{"alice": "' + A + '"}')
+    cards_mock = SimpleNamespace()
+
+    def mock_update(owner, card_id, **kwargs):
+        raise psycopg.OperationalError("private database credentials and host leak")
+
+    cards_mock.update_card = mock_update
+    monkeypatch.setattr(server, "_cards_backend", lambda: cards_mock)
+
+    with TestClient(server.create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net") as client:
+        res = rpc(
+            client,
+            A,
+            "tools/call",
+            {"name": "update_portfolio_card", "arguments": {"card_id": 1, "annual_fee": "95.00"}},
+        ).json()["result"]
+        assert res["isError"]
+        text = res["content"][0]["text"]
+        assert "Could not update the card. Please try again later." in text
+        assert "private" not in text
+
+
+def test_get_portfolio_database_failure_is_sanitized(monkeypatch):
+    from types import SimpleNamespace
+
+    import psycopg
+
+    from public_mcp import server
+
+    monkeypatch.setenv("MCP_SECRET_SLUGS", '{"alice": "' + A + '"}')
+    cards_mock = SimpleNamespace()
+
+    def mock_get(owner, include_closed=False):
+        raise psycopg.OperationalError("private postgres credentials leak")
+
+    cards_mock.get_cards = mock_get
+    monkeypatch.setattr(server, "_cards_backend", lambda: cards_mock)
+
+    with TestClient(server.create_app(funnel_host="example.ts.net"), base_url="https://example.ts.net") as client:
+        res = rpc(
+            client,
+            A,
+            "tools/call",
+            {"name": "get_portfolio", "arguments": {}},
+        ).json()["result"]
+        assert res["isError"]
+        text = res["content"][0]["text"]
+        assert "Could not read saved cards. Please try again later." in text
+        assert "private" not in text

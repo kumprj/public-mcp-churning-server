@@ -16,7 +16,8 @@ from mcp.server.mcpserver.exceptions import ToolError
 from mcp.server.transport_security import TransportSecuritySettings
 from mcp.types import ToolAnnotations
 from starlette.applications import Starlette
-from starlette.routing import Mount
+from starlette.responses import JSONResponse
+from starlette.routing import Mount, Route
 
 from public_mcp.onboarding import register_starter_prompts
 
@@ -37,6 +38,19 @@ def _balances_backend():
     from churning_mcp import balances
 
     return balances
+
+
+def _cards_backend():
+    from churning_mcp import cards
+
+    return cards
+
+
+def _validate_annual_fee(annual_fee: Decimal) -> None:
+    if not annual_fee.is_finite() or not 0 <= annual_fee <= Decimal("999999.99"):
+        raise ToolError("Provide a nonnegative annual fee below 1,000,000.")
+    if annual_fee != annual_fee.quantize(Decimal("0.01")):
+        raise ToolError("Annual fee must have at most two decimal places.")
 
 
 def balance_tools(owner):
@@ -122,7 +136,7 @@ def assistant_instructions(has_portfolio_access: bool) -> str:
         "can refine. Never substitute your own guess for a detail the user did not give. Only claim a card "
         "was saved after a successful tool result. Never save cards from research sources. "
         "Use update_portfolio_card with the card_id from get_portfolio when the user wants to update a card's "
-        "annual fee, notes, or closure date. "
+        "annual fee, notes, opening date, or closure date. "
         "Users can also save points/miles totals with set_point_balance. Resolve program names with "
         "list_point_programs and ask about ambiguous names. Never infer balances from cards or offers. "
         "A saved balance replaces that program's total; do not add it to the existing balance. "
@@ -154,18 +168,13 @@ def portfolio_tool(owner):
         credit card recommendations, application strategy, annual fees, points, or 5/24 status
         to inspect their existing cards. Includes closed cards only when requested.
         """
-        source = _research_backend()
-        rows = source._query(
-            "SELECT id, issuer, product, is_business, counts_toward_524, opened_on, closed_on, annual_fee, "
-            "bonus_points, bonus_program, msr_amount, msr_deadline, msr_spent, bonus_received_on, notes "
-            "FROM cards WHERE owner = %s AND (%s OR closed_on IS NULL) ORDER BY opened_on DESC",
-            (owner, include_closed),
-        )
-        cards_list = [
-            {k: (source._f(v) if k in {"annual_fee", "msr_amount", "msr_spent"} else v) for k, v in row.items()}
-            for row in rows
-        ]
-        return {"cards": cards_list, "total_count": len(cards_list)}
+        try:
+            cards_list = _cards_backend().get_cards(owner, include_closed=include_closed)
+            return {"cards": cards_list, "total_count": len(cards_list)}
+        except psycopg.Error:
+            raise ToolError("Could not read saved cards. Please try again later.") from None
+        except ValueError as err:
+            raise ToolError(str(err)) from None
 
     return get_portfolio
 
@@ -193,10 +202,7 @@ def add_card_tool(owner):
             raise ToolError("Use card product names, never account numbers.")
         if opened_on > date.today():
             raise ToolError("The opening date cannot be in the future.")
-        if not annual_fee.is_finite() or not 0 <= annual_fee <= Decimal("999999.99"):
-            raise ToolError("Provide a nonnegative annual fee below 1,000,000.")
-        if annual_fee != annual_fee.quantize(Decimal("0.01")):
-            raise ToolError("Annual fee must have at most two decimal places.")
+        _validate_annual_fee(annual_fee)
         try:
             with _database_backend().connect(read_only=False) as conn:
                 # Serialize saves for this owner, including concurrent retries.
@@ -239,32 +245,37 @@ def update_card_tool(owner):
         annual_fee: Decimal | None = None,
         notes: str | None = None,
         closed_on: date | None = None,
+        opened_on: date | None = None,
     ) -> dict:
-        """Update fields (such as annual fee, notes, or closure date) on an existing card in this link's portfolio.
+        """Update fields (such as annual fee, notes, opening date estimate, or closure date) on an existing card.
 
         Call get_portfolio to find the card_id first. Ownership is fixed to this link.
         """
+        if card_id <= 0:
+            raise ToolError("Provide a valid positive card ID.")
         if annual_fee is not None:
-            if not annual_fee.is_finite() or not 0 <= annual_fee <= Decimal("999999.99"):
-                raise ToolError("Provide a nonnegative annual fee below 1,000,000.")
-            if annual_fee != annual_fee.quantize(Decimal("0.01")):
-                raise ToolError("Annual fee must have at most two decimal places.")
+            _validate_annual_fee(annual_fee)
+        if opened_on is not None and opened_on > date.today():
+            raise ToolError("The opening date cannot be in the future.")
         try:
-            from churning_mcp import cards
-
             fee_float = float(annual_fee) if annual_fee is not None else None
             return {
                 "status": "updated",
-                "card": cards.update_card(
+                "card": _cards_backend().update_card(
                     owner,
                     card_id,
                     annual_fee=fee_float,
                     notes=notes,
                     closed_on=closed_on,
+                    opened_on=opened_on,
                 ),
             }
         except ValueError as err:
-            raise ToolError(str(err)) from None
+            # Prevent internal owner identifiers from leaking into tool errors.
+            message = str(err)
+            if owner in message:
+                message = message.replace(f" in {owner}'s portfolio", " in portfolio").replace(owner, "")
+            raise ToolError(message) from None
         except psycopg.Error:
             raise ToolError("Could not update the card. Please try again later.") from None
 
@@ -373,8 +384,15 @@ def create_app(slug=None, funnel_host=None, port=None):
                 await stack.enter_async_context(child.router.lifespan_context(child))
             yield
 
+    async def health_check(request):
+        return JSONResponse({"status": "ok"})
+
+    routes = [
+        Route("/health", endpoint=health_check, methods=["GET"]),
+        *(Mount(f"/{secret}", app=child) for secret, child in zip(secrets.values(), apps, strict=True)),
+    ]
     return Starlette(
-        routes=[Mount(f"/{secret}", app=child) for secret, child in zip(secrets.values(), apps, strict=True)],
+        routes=routes,
         lifespan=lifespan,
     )
 

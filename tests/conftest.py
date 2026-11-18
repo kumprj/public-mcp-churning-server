@@ -35,5 +35,18 @@ def isolated_backend(monkeypatch):
     monkeypatch.setattr(server, "_database_backend", lambda: database)
     balances = SimpleNamespace(list_programs=unavailable, get_balances=unavailable, set_balances=unavailable)
     monkeypatch.setattr(server, "_balances_backend", lambda: balances)
+    cards = SimpleNamespace(
+        get_cards=lambda owner, include_closed=False: [
+            {k: (backend._f(v) if k in {"annual_fee", "msr_amount", "msr_spent"} else v) for k, v in row.items()}
+            for row in backend._query(
+                "SELECT id, issuer, product, is_business, counts_toward_524, opened_on, closed_on, annual_fee, "
+                "bonus_points, bonus_program, msr_amount, msr_deadline, msr_spent, bonus_received_on, notes "
+                "FROM cards WHERE owner = %s AND (%s OR closed_on IS NULL) ORDER BY opened_on DESC",
+                (owner, include_closed),
+            )
+        ],
+        update_card=unavailable,
+    )
+    monkeypatch.setattr(server, "_cards_backend", lambda: cards)
     monkeypatch.setattr(server, "load_dotenv", lambda *args, **kwargs: None)
     monkeypatch.setenv("MCP_PORTFOLIO_OWNERS", "[]")

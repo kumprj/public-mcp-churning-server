@@ -50,6 +50,9 @@ def test_prompt_retrieval(client, name):
     assert len(messages) == 1
     assert messages[0]["role"] == "user"
     assert messages[0]["content"]["text"] == STARTER_PROMPTS[name][1]
+    if name == "build_portfolio":
+        assert "lookup_card_details" in messages[0]["content"]["text"]
+        assert "update_portfolio_card" in messages[0]["content"]["text"]
 
 
 def test_unknown_prompt(client):
