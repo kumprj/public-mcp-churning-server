@@ -203,10 +203,10 @@ portfolio read with shared research.
 
 ## Contributing and CI
 
-The repository policy is to merge changes through pull requests with a passing
-`build-and-test` status check and an up-to-date branch. Enforcing this policy for
-administrators, blocking direct pushes, and disabling force pushes and deletion
-requires the corresponding GitHub branch protection settings.
+`main` is protected: changes merge only through pull requests, and the
+`build-and-test` check from GitHub Actions must pass on a branch that is up to date
+with `main`. These rules apply to administrators too. Direct pushes, force pushes,
+and branch deletion are blocked. Reviewer approval is not required.
 
 The GitHub Action builds a wheel and source distribution, installs the wheel, and
 runs the unit suite. It needs no private credentials and can run on fork pull requests.
