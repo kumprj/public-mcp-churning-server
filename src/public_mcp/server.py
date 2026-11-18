@@ -103,6 +103,7 @@ PUBLIC_TOOLS = (
     "lookup_card_details",
     "lookup_shutdown_risk",
     "get_cabin_products",
+    "lookup_manufactured_spend",
 )
 
 
