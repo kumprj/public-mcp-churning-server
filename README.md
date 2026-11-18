@@ -22,7 +22,8 @@ link to your app, then start a conversation using the examples below.
 ## Recommended Getting Started Flow
 
 1. Request access and receive your private connection URL.
-2. Add the URL to an app supporting remote Streamable HTTP MCP connections.
+2. Add the URL to an app supporting remote Streamable HTTP MCP connections
+   (see [Supported apps](#supported-apps-including-ios)).
 3. Send: **Help me add my cards to my portfolio so you can tailor your answers to me.**
    You can also select **Set up my portfolio** from the app's MCP prompt picker.
 4. List your cards in ordinary language. Start with whatever you know; the assistant
@@ -31,6 +32,28 @@ link to your app, then start a conversation using the examples below.
    The assistant should confirm a save only after it succeeds.
 6. Ask **Based on my saved portfolio, which card should I consider next?** Add your
    goal, such as cash back or a planned trip, so the answer can be more useful.
+
+### Supported apps, including iOS
+
+Any app that supports custom remote MCP connectors can use your connection URL.
+Paste the full URL exactly as you received it; it already contains your private
+access link, so no extra sign-in or token is needed.
+
+| App | Custom remote MCP support | Plan required | Where to add the URL |
+| --- | --- | --- | --- |
+| Claude | Yes, natively in the iOS app and synced across devices | Free includes 1 custom connector; unlimited on Pro, Max, Team, and Enterprise | In the Claude iOS app, web, or desktop: **Customize → Connectors → Add custom connector**. |
+| Gemini | Yes, added on the web and synced to iOS | Free for personal Google accounts in the US, 18+, with **Keep Activity** on | In a browser at gemini.google.com: **Settings → Connected Apps → Add a custom app**. It then appears in the iOS app. |
+| ChatGPT | Yes, as plugins/MCP apps, synced to iOS | Paid or workspace plans; not consumer Free | On the web at chatgpt.com: **Settings → Plugins → Add custom MCP server**. Then use it in mobile chats. |
+| Perplexity | Yes, as custom remote connectors | Paid plans (Pro, Max, Enterprise); not Free | On the web or desktop: **Account Settings → Connectors**. Synced across your account. |
+| Third-party iOS MCP clients | Yes, as full native MCP clients | Free, using your own AI provider API key | App Store clients such as ChatMCP or Joey MCP Client let you add custom MCP URLs directly on your phone. |
+
+On iOS, Claude is the simplest option because you can paste the URL right in the
+app, and the free plan covers one custom connector. Gemini is the best free
+alternative where it is available. ChatGPT and Perplexity work if you already pay
+for them, but you add the URL in a web browser first.
+
+This table reflects availability as of November 2026. Plans, regions, and menu
+names change often, so check each app's current help pages before choosing one.
 
 ### What to tell the assistant
 
