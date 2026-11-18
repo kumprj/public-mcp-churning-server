@@ -34,7 +34,7 @@ link or card details in public issues.
 | Gemini | Free for personal Google accounts in the US, 18+, with **Keep Activity** on | On the web at gemini.google.com: **Preferences → Skills → Connectors tab** (just paste the URL and accept; it then appears on iOS) |
 | ChatGPT / Codex | Paid or workspace plans (Plus, Team, Enterprise) | On the web at chatgpt.com: **Settings → Connectors / Developer Mode → Add custom MCP server** (paste URL, set authentication to None); then active across web and mobile |
 | Perplexity | Pro, Max, or Enterprise | On the web or desktop: **Account Settings → Connectors → Add Connector** (paste URL); synced across your account |
-| Muse | Free with Meta account | In Muse web or app: **Settings → Connectors** (or prompt Muse in chat: *"Add custom connector for Churning with URL: <URL>"*) |
+| Muse | Free with Meta account | In Muse web or app: **Settings → Connectors** (or prompt Muse in chat to build a custom connector; see message below) |
 | Third-party iOS MCP clients | Free, using your own AI provider API key | Add the URL in apps such as ChatMCP or Joey MCP Client |
 
 On iOS, Claude is the simplest: you paste the URL right in the app, and the free plan
@@ -51,7 +51,10 @@ Once connected, talk to the assistant naturally—no special syntax, forms, or c
 - **Gemini:** Ensure the connector is active under **Preferences → Skills → Connectors**. It works across both web and iOS; if Gemini doesn't automatically trigger the tool on a broad question, explicitly prompt it: *"Check my Churning portfolio"* or *"Use the Churning tool."*
 - **ChatGPT / Codex:** Ensure the custom MCP server is enabled in your chat session. Mentioning `@Churning` or prompting *"Use the Churning tool to check my portfolio"* ensures the model routes directly to the MCP tools rather than relying on general browsing.
 - **Perplexity:** Verify that Connectors are active in your thread sources/focus toggle. Frame requests clearly around your cards, e.g., *"Using my Churning connector, what card should I apply for next?"*
-- **Muse:** Verify the connector is toggled on in **Settings → Connectors**. You can chat normally or prompt: *"Using my Churning connector, check my portfolio and see if I'm eligible for this bonus."*
+- **Muse:** Verify the connector is toggled on in **Settings → Connectors**. To set up the custom connector in Muse chat, send:
+  > "Build a custom connector for Churning using the remote MCP server at https://your-pc.tailnet-name.ts.net/<MCP_SECRET_SLUG>/mcp. It uses Streamable HTTP transport and requires no separate API key or auth header because authentication is embedded in the URL path. Connect to the existing server without creating a local replacement, list the available tools, and save this connector for future chats."
+  
+  Once saved, you can converse normally or prompt: *"Using my Churning connector, check my portfolio and see if I'm eligible for this bonus."*
 
 #### Conversational examples
 
