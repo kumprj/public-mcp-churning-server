@@ -40,9 +40,10 @@ def _balances_backend():
 
 
 def balance_tools(owner):
-    def list_point_programs() -> list[dict]:
+    def list_point_programs() -> dict:
         """List supported rewards program codes and names to resolve user-supplied balances."""
-        return _balances_backend().list_programs()
+        programs = _balances_backend().list_programs()
+        return {"programs": programs, "total_count": len(programs)}
 
     def get_point_balances() -> dict:
         """Read this link's recorded points/miles totals and dates. These are not live bank balances."""
@@ -146,7 +147,7 @@ def assistant_instructions(has_portfolio_access: bool) -> str:
 def portfolio_tool(owner):
     # Capture ownership in a closure; never accept it as a tool argument or mutate
     # upstream settings, which are shared across concurrent requests.
-    def get_portfolio(include_closed: bool = False) -> list[dict]:
+    def get_portfolio(include_closed: bool = False) -> dict:
         """Read the saved credit card portfolio for this connection.
 
         Automatically call this tool at the start of any conversation when the user asks about
@@ -160,10 +161,11 @@ def portfolio_tool(owner):
             "FROM cards WHERE owner = %s AND (%s OR closed_on IS NULL) ORDER BY opened_on DESC",
             (owner, include_closed),
         )
-        return [
+        cards_list = [
             {k: (source._f(v) if k in {"annual_fee", "msr_amount", "msr_spent"} else v) for k, v in row.items()}
             for row in rows
         ]
+        return {"cards": cards_list, "total_count": len(cards_list)}
 
     return get_portfolio
 
