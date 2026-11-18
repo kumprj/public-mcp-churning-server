@@ -30,23 +30,39 @@ link or card details in public issues.
 
 | App | Plan required | Where to add the URL |
 | --- | --- | --- |
-| Claude | Free includes 1 custom connector; unlimited on Pro, Max, Team, and Enterprise | In the iOS app, web, or desktop: **Customize → Connectors → Add custom connector** |
-| Gemini | Free for personal Google accounts in the US, 18+, with **Keep Activity** on | On the web at gemini.google.com: **Settings → Connected Apps → Add a custom app**; it then appears on iOS |
-| ChatGPT | Paid or workspace plans | On the web at chatgpt.com: **Settings → Plugins → Add custom MCP server**; it then works in mobile chats |
-| Perplexity | Pro, Max, or Enterprise | On the web or desktop: **Account Settings → Connectors**; synced to your account |
+| Claude | Free includes 1 custom connector; unlimited on Pro, Max, Team, and Enterprise | In the iOS app, web, or desktop: **Customize → Connectors → Add custom connector** (hit **Next**, leave **No Sign In** set, and you're all set!) |
+| Gemini | Free for personal Google accounts in the US, 18+, with **Keep Activity** on | On the web at gemini.google.com: **Preferences → Skills → Connectors tab** (just paste the URL and accept; it then appears on iOS) |
+| ChatGPT / Codex | Paid or workspace plans (Plus, Team, Enterprise) | On the web at chatgpt.com: **Settings → Connectors / Developer Mode → Add custom MCP server** (paste URL, set authentication to None); then active across web and mobile |
+| Perplexity | Pro, Max, or Enterprise | On the web or desktop: **Account Settings → Connectors → Add Connector** (paste URL); synced across your account |
+| Muse | Free with Meta account | In Muse web or app: **Settings → Connectors** (or prompt Muse in chat: *"Add custom connector for Churning with URL: <URL>"*) |
 | Third-party iOS MCP clients | Free, using your own AI provider API key | Add the URL in apps such as ChatMCP or Joey MCP Client |
 
 On iOS, Claude is the simplest: you paste the URL right in the app, and the free plan
-covers it. Gemini is the best free alternative where available. ChatGPT and
+covers it. Gemini and Muse are great free alternatives where available. ChatGPT and
 Perplexity need a paid plan and a web browser for setup. This reflects November 2026;
 plans and menus change, so check each app's help pages.
 
-### Suggested information (ballpark dates and details are fine)
+### Getting started with the Churning MCP: How to talk to it successfully
 
-You don't need a form or special commands. For example:
+Once connected, talk to the assistant naturally—no special syntax, forms, or code are required.
+
+#### App-specific tips to talk to it successfully
+- **Claude:** Ensure the **Churning** connector toggle is enabled in your chat bar. You can choose a starter prompt if visible or simply start typing.
+- **Gemini:** Ensure the connector is active under **Preferences → Skills → Connectors**. It works across both web and iOS; if Gemini doesn't automatically trigger the tool on a broad question, explicitly prompt it: *"Check my Churning portfolio"* or *"Use the Churning tool."*
+- **ChatGPT / Codex:** Ensure the custom MCP server is enabled in your chat session. Mentioning `@Churning` or prompting *"Use the Churning tool to check my portfolio"* ensures the model routes directly to the MCP tools rather than relying on general browsing.
+- **Perplexity:** Verify that Connectors are active in your thread sources/focus toggle. Frame requests clearly around your cards, e.g., *"Using my Churning connector, what card should I apply for next?"*
+- **Muse:** Verify the connector is toggled on in **Settings → Connectors**. You can chat normally or prompt: *"Using my Churning connector, check my portfolio and see if I'm eligible for this bonus."*
+
+#### Conversational examples
+
+Speak in plain English. For example:
 
 > I have a Chase Sapphire Preferred I opened around March 2023 and an Amex Gold from
 > last year. Walk me through what you need, save them, and show me what was saved.
+
+#### Suggested card details (ballpark dates and details are fine)
+
+The assistant factors in five key details when saving cards and checking rules such as Chase 5/24:
 
 | Detail | Why it helps |
 | --- | --- |
@@ -102,7 +118,7 @@ sends a longer, prewritten version of the same request, which can be slightly mo
 consistent, but typing works just as well.
 
 The assistant answers your question first and suggests adding a portfolio only when
-it would help: at most twice per conversation, and not after you decline.
+it would help: at most once per conversation, and not after you decline.
 
 ## Tools
 
