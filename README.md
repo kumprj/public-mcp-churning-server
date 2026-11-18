@@ -52,12 +52,9 @@ Once connected, talk to the assistant naturally—no special syntax, forms, or c
 - **ChatGPT / Codex:** Ensure the custom MCP server is enabled in your chat session. Mentioning `@Churning` or prompting *"Use the Churning tool to check my portfolio"* ensures the model routes directly to the MCP tools rather than relying on general browsing.
 - **Perplexity:** Verify that Connectors are active in your thread sources/focus toggle. Frame requests clearly around your cards, e.g., *"Using my Churning connector, what card should I apply for next?"*
 - **Muse:** Verify the connector is toggled on in **Settings → Connectors**. To set up the custom connector in Muse chat, send:
-  > "Build a custom connector for Churning using the remote MCP server at <sample URL here>. It uses Streamable HTTP transport and requires no separate API key or auth header because authentication is embedded in the URL path. Connect to the existing server without creating a local replacement, list the available tools, and save this connector for future chats."
+  > "Build a custom connector for Churning using the remote MCP server at <sample URL here>. This URL is publicly hosted over the internet via Tailscale Funnel—connect directly over public HTTPS without requesting a Tailnet device invite. It uses Streamable HTTP transport and requires no separate API key or auth header because authentication is embedded in the URL path. Connect to the existing server without creating a local replacement, list the available tools, and save this connector for future chats."
   
-  When prompted on the secure credentials page, enter only the secret token from the URL path. If Muse asks to approve a device on Tailscale, reply:
-  > "This URL is publicly hosted via Tailscale Funnel. Connect directly over public HTTPS without requesting a Tailnet device invite."
-  
-  Once saved, you can converse normally or prompt: *"Using my Churning connector, check my portfolio and see if I'm eligible for this bonus."*
+  When prompted on the secure credentials page, enter only the secret token from the URL path. Once saved, you can converse normally or prompt: *"Using my Churning connector, check my portfolio and see if I'm eligible for this bonus."*
 
 #### Conversational examples
 
