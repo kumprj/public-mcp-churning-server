@@ -118,6 +118,8 @@ benefits you use aren't saved, so mention them when asked.
 | Am I eligible for the Bilt Palladium bonus? | Issuer rules checked against your history, with anything missing named. |
 | Where should I transfer 100,000 Chase points? | Several airline and hotel options with ratios and caveats, not just one. |
 | What's the best business class seat on Qatar's A350? | Seat product, layout, best seats, and a seat-map link. |
+| Is a 2-3-2 business class worth booking? | How the layout rates (1-2-1 good, 2-3-2 poor) plus seat-picking tips. |
+| What are people saying about Fluz and Taekus debit loops? | How loops work, risks, and the newest manufactured-spending reports. |
 | What gets people shut down by Amex? | Do's and don'ts plus recent community reports, with dates. |
 | What are people reporting about Amex retention offers? | Recent Reddit and blog data points, with links and dates. |
 
@@ -178,8 +180,8 @@ When the credentials page asks, enter only the secret part of the URL.
 | `evaluate_point_valuation`, `estimate_award_redemption_value`, `get_award_booking_window` | Transfer-partner values by airline and hotel, redemption value, and when awards open. |
 | `search_data_points`, `get_document`, `get_document_context`, `get_search_coverage` | Dated Reddit, blog, and wiki evidence search. |
 | `lookup_retention_playbook`, `lookup_reconsideration_guide`, `lookup_shutdown_risk` | Retention, reconsideration, and account-shutdown guidance with community data points. |
-| `get_cabin_products` | Premium cabin seats by airline and aircraft, with aeroLOPA seat-map links. |
-| `simulate_manufactured_spend_fees` | Fee math for manufactured spend. |
+| `get_cabin_products` | Premium cabin seats by airline and aircraft, layout ratings, seat tips, and aeroLOPA seat-map links. |
+| `simulate_manufactured_spend_fees`, `lookup_manufactured_spend` | Fee math, debit-loop mechanics and risks, and recent manufactured-spending reports. |
 
 Starter prompts: `getting_started`, `build_portfolio`, `next_card`,
 `evaluate_redemption`.
