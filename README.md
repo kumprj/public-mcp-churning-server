@@ -28,14 +28,14 @@ link or card details in public issues.
 
 ### Supported apps
 
-| App | Plan required | Where to add the URL |
-| --- | --- | --- |
-| Claude | Free includes 1 custom connector; unlimited on Pro, Max, Team, and Enterprise | In the iOS app, web, or desktop: **Customize → Connectors → Add custom connector** (hit **Next**, leave **No Sign In** set, and you're all set!) |
-| Gemini | Free for personal Google accounts in the US, 18+, with **Keep Activity** on | On the web at gemini.google.com: **Preferences → Skills → Connectors tab** (just paste the URL and accept; it then appears on iOS) |
-| ChatGPT / Codex | Paid or workspace plans (Plus, Team, Enterprise) | On the web at chatgpt.com: **Settings → Connectors / Developer Mode → Add custom MCP server** (paste URL, set authentication to None); then active across web and mobile |
-| Perplexity | Pro, Max, or Enterprise | On the web or desktop: **Account Settings → Connectors → Add Connector** (paste URL); synced across your account |
-| Muse | Free with Meta account | In Muse web or app: **Settings → Connectors** (or prompt Muse in chat to build a custom connector; see message below) |
-| Third-party iOS MCP clients | Free, using your own AI provider API key | Add the URL in apps such as ChatMCP or Joey MCP Client |
+| App | Plan required | Where to add the URL | Notes & Tips |
+| --- | --- | --- | --- |
+| Claude | Free includes 1 custom connector; unlimited on Pro, Max, Team, and Enterprise | In the iOS app, web, or desktop: **Customize → Connectors → Add custom connector** (hit **Next**, leave **No Sign In** set, and you're all set!) | Simplest setup on iOS; reliably calls tools automatically without special syntax. |
+| Gemini | Free for personal Google accounts in the US, 18+, with **Keep Activity** on | On the web at gemini.google.com: **Preferences → Skills → Connectors tab** (just paste the URL and accept; it then appears on iOS) | **Important:** Disable the **Google Workspace** extension (Gmail/Drive) in Gemini settings, or Gemini will intercept card queries with email searches and conflate/hallucinate portfolio data. Use `@Churning` and ask to *"List all saved cards"*. |
+| ChatGPT / Codex | Paid or workspace plans (Plus, Team, Enterprise) | On the web at chatgpt.com: **Settings → Connectors / Developer Mode → Add custom MCP server** (paste URL, set authentication to None); then active across web and mobile | Mention `@Churning` or prompt *"Check my Churning portfolio"* to route directly to MCP tools rather than general web search. |
+| Perplexity | Pro, Max, or Enterprise | On the web or desktop: **Account Settings → Connectors → Add Connector** (paste URL); synced across your account | Ensure Connectors are active in your thread focus toggle. |
+| Muse | Free with Meta account | In Muse web or app: **Settings → Connectors** (or prompt Muse in chat to build a custom connector; see message below) | Enter only the secret token when prompted on the credentials page. |
+| Third-party iOS MCP clients | Free, using your own AI provider API key | Add the URL in apps such as ChatMCP or Joey MCP Client | Supports direct streaming HTTP MCP. |
 
 On iOS, Claude is the simplest: you paste the URL right in the app, and the free plan
 covers it. Gemini and Muse are great free alternatives where available. ChatGPT and
