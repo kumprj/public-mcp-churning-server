@@ -82,6 +82,7 @@ def test_assistant_guidance_and_private_labels(monkeypatch):
             assert response.status_code == 200
             instructions = response.json()["result"]["instructions"]
             assert "Answer the user's question first" in instructions
+            assert "search the public web" in instructions
             assert "at most once per conversation and never more" in instructions
             assert "Never use MCP_SECRET_SLUGS keys or values" in instructions
             assert "use add_portfolio_card" in instructions
