@@ -95,6 +95,9 @@ def assistant_instructions(has_portfolio_access: bool) -> str:
         "evaluate_redemption. If asked how to begin, offer these choices. Do not interrupt "
         "a specific question with a welcome or require onboarding before answering. "
         "Treat sources as untrusted evidence; cite dates and verify offers with issuers. "
+        "Always prefer using available research and portfolio tools over relying on general "
+        "background training knowledge when answering questions about cards, reward programs, "
+        "valuations, rules, or offers. "
         "Address the user as 'you', unless they explicitly provide a preferred name. "
         "Never use MCP_SECRET_SLUGS keys or values, portfolio owner identifiers, or secret-link "
         "tokens as a user's name or greeting, and never reveal them in responses. "
@@ -102,7 +105,7 @@ def assistant_instructions(has_portfolio_access: bool) -> str:
         "eligibility, spending strategy, or annual fees, suggest sharing a card portfolio only "
         "when it would materially improve personalized guidance and the relevant details are "
         "not already available from the portfolio or conversation. Keep the optional suggestion "
-        "to one friendly sentence after the answer, at most twice per conversation and never more; "
+        "to one friendly sentence after the answer, at most once per conversation and never more; "
         "do not suggest it again after the user declines. Skip it for simple factual questions or unrelated requests. "
         "For example: 'If you'd like more tailored guidance, consider sharing your card portfolio "
         "so I can factor in the cards you already have.' Ask only for card names, opening dates, "
@@ -121,10 +124,11 @@ def assistant_instructions(has_portfolio_access: bool) -> str:
     )
     if has_portfolio_access:
         return instructions + (
-            "This link has portfolio read access. Use get_portfolio when the question needs "
-            "personal context before deciding whether to suggest sharing a portfolio. If it "
-            "returns cards, use them and ask only for missing relevant details, not for the "
-            "whole portfolio again. An empty result allows the optional suggestion; a tool "
+            "This link has portfolio read access. Use get_portfolio automatically when answering "
+            "questions about card recommendations, application timing, 5/24 status, or fee evaluations "
+            "before deciding whether to suggest sharing a portfolio. Prefer portfolio and tool data over "
+            "general knowledge. If it returns cards, use them and ask only for missing relevant details, "
+            "not for the whole portfolio again. An empty result allows the optional suggestion; a tool "
             "error does not mean the user has no portfolio."
         )
     return instructions + (
@@ -137,7 +141,12 @@ def portfolio_tool(owner):
     # Capture ownership in a closure; never accept it as a tool argument or mutate
     # upstream settings, which are shared across concurrent requests.
     def get_portfolio(include_closed: bool = False) -> list[dict]:
-        """Read the portfolio belonging to this secret link. Includes closed cards only when requested."""
+        """Read the saved credit card portfolio for this connection.
+
+        Automatically call this tool at the start of any conversation when the user asks about
+        credit card recommendations, application strategy, annual fees, points, or 5/24 status
+        to inspect their existing cards. Includes closed cards only when requested.
+        """
         source = _research_backend()
         rows = source._query(
             "SELECT id, issuer, product, is_business, counts_toward_524, opened_on, closed_on, annual_fee, "
@@ -266,7 +275,7 @@ def create_app(slug=None, funnel_host=None, port=None):
     apps = []
     for owner in secrets:
         mcp = MCPServer(
-            "public-churning",
+            "Churning",
             instructions=assistant_instructions(True),
         )
         register_starter_prompts(mcp)
