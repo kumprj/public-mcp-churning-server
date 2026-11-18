@@ -142,6 +142,7 @@ def test_portfolio_isolation(monkeypatch):
 def test_add_card_owner_and_retry(monkeypatch):
     from datetime import date
     from decimal import Decimal
+
     from server import add_card_tool, db
 
     saved = {}
@@ -166,7 +167,7 @@ def test_add_card_owner_and_retry(monkeypatch):
             return self.result
 
     monkeypatch.setattr(db, "connect", lambda **kwargs: Connection())
-    args = ("Chase", "Test", date(2020, 1, 1), Decimal("95"), False, True)
+    args = ("Chase", "Test", date(2020, 1, 1), Decimal(95), False, True)
     assert add_card_tool("first")(*args)["status"] == "saved"
     assert add_card_tool("first")(*args)["status"] == "already_exists"
     assert add_card_tool("second")(*args)["status"] == "saved"
