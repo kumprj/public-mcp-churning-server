@@ -14,13 +14,15 @@ STARTER_PROMPTS = {
     "build_portfolio": (
         "Set up my portfolio",
         "Help me add my cards to my portfolio. Read get_portfolio first to avoid re-entry. "
-        "Collect issuer, product, opening date, annual fee, business status, and personal-credit "
-        "reporting status for each card. Tell me ballpark dates and fees are fine. Ask for missing "
-        "facts without guessing; save an approximate month as its first day and say so. Never request "
-        "account numbers or credentials. Use add_portfolio_card for the cards I ask to save, "
-        "then summarize successful additions and anything still missing. Do not claim a save "
-        "succeeded unless the tool confirms it. Offer optional points/miles balance entry by program. "
-        "Read get_point_balances first, resolve names with list_point_programs, and use "
+        "For each card I mention, use lookup_card_details to determine the standard annual fee, "
+        "issuer, business card status, and personal-credit reporting status (5/24) from the card "
+        "catalog instead of asking for details already known. Ask only for missing facts (such as "
+        "approximate opening date) without guessing. Tell me ballpark dates are fine: save an approximate "
+        "month as its first day, and tell me it was saved as an estimate I can refine later with "
+        "update_portfolio_card. Never request account numbers or credentials. Use add_portfolio_card for "
+        "the cards I ask to save, then summarize successful additions and anything still missing. Do not "
+        "claim a save succeeded unless the tool confirms it. Offer optional points/miles balance entry by "
+        "program. Read get_point_balances first, resolve names with list_point_programs, and use "
         "set_point_balance only for totals I ask you to save. Never infer a balance from my cards.",
     ),
     "next_card": (

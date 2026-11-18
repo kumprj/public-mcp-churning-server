@@ -4,9 +4,20 @@ import psycopg
 import pytest
 from mcp.server.mcpserver.exceptions import ToolError
 from starlette.testclient import TestClient
-from test_server import A, B, rpc
 
 from public_mcp import server
+
+A = "a" * 43
+B = "b" * 43
+HEADERS = {"Accept": "application/json, text/event-stream"}
+
+
+def rpc(client, secret, method, params=None):
+    return client.post(
+        f"/{secret}/mcp",
+        headers=HEADERS,
+        json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params or {}},
+    )
 
 
 def test_balance_tools_are_link_scoped_and_replace_totals(monkeypatch):
@@ -96,5 +107,19 @@ def test_card_validation_reason_reaches_the_model(monkeypatch, overrides, reason
         "counts_toward_524": True,
     }
     result = call_tool(monkeypatch, "add_portfolio_card", card | overrides)
+    assert result["isError"]
+    assert reason in result["content"][0]["text"]
+
+
+@pytest.mark.parametrize(
+    ("args", "reason"),
+    [
+        ({"card_id": -1}, "valid positive card ID"),
+        ({"card_id": 1, "annual_fee": "95.001"}, "at most two decimal places"),
+        ({"card_id": 1, "opened_on": "2999-01-01"}, "opening date cannot be in the future"),
+    ],
+)
+def test_update_card_validation_reason_reaches_the_model(monkeypatch, args, reason):
+    result = call_tool(monkeypatch, "update_portfolio_card", args)
     assert result["isError"]
     assert reason in result["content"][0]["text"]

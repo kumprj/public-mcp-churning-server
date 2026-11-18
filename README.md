@@ -105,8 +105,9 @@ Saved cards and balances stay with your connection across conversations. Try:
 | What else do you need to check my eligibility for this bonus? | Uses your card history and names the missing facts. |
 | Show my saved cards, then help me add a new one. | Reviews what's saved before adding more. |
 
-Goals, spending, and benefit usage aren't saved, so share them when asked. To correct
-or remove a saved card, contact the maintainer.
+Goals, spending, and benefit usage aren't saved, so share them when asked. You can
+update fields (such as annual fees, notes, estimated opening dates, or closure dates) on
+saved cards using `update_portfolio_card`. Complete card deletions require a database administrator.
 
 ### Ways to start a conversation
 
@@ -136,7 +137,7 @@ offer history, retention, and reconsideration.
 | --- | --- |
 | `get_portfolio` | Reads this connection's cards. |
 | `add_portfolio_card` | Saves a card the user supplies. A matching issuer, product, and opening date (case-insensitive) returns the existing card unchanged. Saves are serialized per owner and commit one card at a time. |
-| `update_portfolio_card` | Updates fields (such as annual fee, notes, or closure date) on an existing card. |
+| `update_portfolio_card` | Updates fields (such as annual fee, notes, opening date estimate, or closure date) on an existing card. |
 | `get_point_balances` | Reads this connection's points totals and their dates. |
 | `set_point_balance` | Replaces one program's total; rejected if a newer-dated balance exists. |
 | `list_point_programs` | Lists supported program codes. |
@@ -193,6 +194,9 @@ uv run --no-sync public-mcp
 tailscale funnel --bg 8000
 tailscale funnel status
 ```
+
+An unauthenticated health probe is available at `GET /health` (returning `{"status": "ok"}`)
+for load balancers, container watchdogs, and tunnel monitoring without requiring a secret URL.
 
 See the [Tailscale Funnel docs](https://tailscale.com/docs/reference/tailscale-cli/funnel)
 for setup. Each user's URL is `https://<FUNNEL_HOST>/<secret>/mcp`. There's no OAuth.

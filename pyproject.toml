@@ -25,6 +25,7 @@ only-include = ["src", "tests", "server.py", "README.md", "pyproject.toml", ".en
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["tests"]
 
 [tool.uv.sources]
 churning-mcp = { path = "../churning-mcp", editable = true }
