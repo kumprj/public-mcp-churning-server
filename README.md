@@ -54,6 +54,9 @@ Once connected, talk to the assistant naturally—no special syntax, forms, or c
 - **Muse:** Verify the connector is toggled on in **Settings → Connectors**. To set up the custom connector in Muse chat, send:
   > "Build a custom connector for Churning using the remote MCP server at <sample URL here>. It uses Streamable HTTP transport and requires no separate API key or auth header because authentication is embedded in the URL path. Connect to the existing server without creating a local replacement, list the available tools, and save this connector for future chats."
   
+  When prompted on the secure credentials page, enter only the secret token from the URL path. If Muse asks to approve a device on Tailscale, reply:
+  > "This URL is publicly hosted via Tailscale Funnel. Connect directly over public HTTPS without requesting a Tailnet device invite."
+  
   Once saved, you can converse normally or prompt: *"Using my Churning connector, check my portfolio and see if I'm eligible for this bonus."*
 
 #### Conversational examples
