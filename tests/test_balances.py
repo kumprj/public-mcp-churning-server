@@ -4,9 +4,20 @@ import psycopg
 import pytest
 from mcp.server.mcpserver.exceptions import ToolError
 from starlette.testclient import TestClient
-from test_server import A, B, rpc
 
 from public_mcp import server
+
+A = "a" * 43
+B = "b" * 43
+HEADERS = {"Accept": "application/json, text/event-stream"}
+
+
+def rpc(client, secret, method, params=None):
+    return client.post(
+        f"/{secret}/mcp",
+        headers=HEADERS,
+        json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params or {}},
+    )
 
 
 def test_balance_tools_are_link_scoped_and_replace_totals(monkeypatch):
