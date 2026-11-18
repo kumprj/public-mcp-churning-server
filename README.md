@@ -3,7 +3,8 @@
 Option 1A: local PostgreSQL/Ollama, Streamable HTTP, secret URLs, Tailscale Funnel.
 This adapter uses the sibling `../churning-mcp` package without changing it.
 Only the explicit `PUBLIC_TOOLS` allowlist in server.py is registered. Personal
-portfolio, transaction, balance and planning tools and arbitrary SQL are excluded.
+transaction, balance and planning tools and arbitrary SQL are excluded. Portfolio
+read/add tools are registered separately for each link.
 Existing tools retain their PostgreSQL read-only connections.
 
 ## Setup (PowerShell, from this folder)
@@ -71,40 +72,45 @@ Tests exercise the actual HTTP MCP initialize and tools/list protocol for two
 links, revoked/unknown paths, host validation, and invalid configuration without
 requiring your database. Live database queries and external Funnel connectivity
 must be checked after configuring `.env`. For production, use a database role
-with SELECT grants only on shared corpus/reference tables as defense in depth.
+with SELECT grants on shared tables and the portfolio grants described below.
 
 This is a Python ASGI service; moving it later requires hosting Python plus the
 database and embedding service. Cloudflare Workers cannot run it unchanged.
 
-## Private portfolio association
+## Portfolio tools and conversation suggestions
 
-`MCP_PORTFOLIO_OWNERS` is an explicit JSON list of secret-map keys allowed to
-read their existing portfolio. This installation enables only `kumprj`.
-That link exposes `get_portfolio`, filtered by `cards.owner = 'kumprj'` on every
-call. Other links cannot list or call that tool. Ownership is captured server-side
-and cannot be supplied by the caller. No portfolio writes are enabled.
-Keys listed here become stable owner identifiers; rotating their secret preserves
-ownership. Restart the server and reconnect clients after changing configuration.
-The shared `get_active_offers` tool was removed because it uses the upstream
-process-wide owner. Other shared tools remain available.
+Every secret link now exposes `get_portfolio` and `add_portfolio_card`. Cards are
+stored under the corresponding MCP_SECRET_SLUGS dictionary key in `cards.owner`.
+Ownership is fixed server-side and cannot be supplied by callers. Keys and tokens
+are internal identifiers, never greetings. Anyone with a link can read and add its
+cards; rotating a secret preserves ownership when its key stays unchanged.
 
-## Assistant response guidance
+| Task | Command or example | Behavior |
+| --- | --- | --- |
+| Install | `uv sync` | Uses sibling `../churning-mcp`. |
+| Generate secret | `uv run python -c "import secrets; print(secrets.token_urlsafe(32))"` | Generate a unique secret for each friend. |
+| Configure friend | `MCP_SECRET_SLUGS` maps a stable owner key to a generated secret in `.env`. | Every configured link gets portfolio tools. |
+| Start/restart | `uv run --no-sync python server.py` | Stop the previous process first; reconnect clients afterward. |
+| Connect | `https://<FUNNEL_HOST>/<secret>/mcp` | Opens that friend's tools. |
+| Add card | Add my Chase Sapphire Preferred, opened 2025-03-15, annual fee $95, personal card reporting to personal credit. | Saves the card under the link's owner. |
+| Add portfolio | Add these cards to my portfolio: ... | Asks for missing details and saves each card separately. |
+| Review | What cards are in my portfolio? | Reads this link's cards only. |
+| Personalize | Which card should I consider next based on my portfolio? | Reads cards before combining them with shared research. |
+| Suggestion | Consider adding your card portfolio so I can tailor this guidance to the cards you already have. | Answer first, suggest only when helpful, at most once per conversation. |
+| Check | `uv run pytest -q` and `uv run ruff check .` | Local verification. |
 
-MCP initialization instructions ask connected assistants to answer first and then,
-when personal context would help, offer a brief optional suggestion to share a card
-portfolio. The suggestion is limited to once per conversation and skipped when
-the relevant details are already available or the user declines. Links with portfolio
-access are instructed to read it first when personal context is needed, distinguish
-empty results from errors, and ask only for missing details.
+Required fields: issuer, product, opening date, annual fee, business status, and
+personal-credit reporting status for 5/24. Missing details must not be guessed.
+Same issuer/product (case-insensitive) and opening date returns the existing card;
+retries do not overwrite records. Saves are serialized per owner in this adapter.
+Updates and deletions currently require database edits. Each card commits separately.
 
-Secret-map keys and values are internal identifiers, never names or greetings.
-Instructions use no configured identifiers and tell the assistant to address the
-user as “you” unless the user provides a preferred name.
+Use the existing upstream schema including the owner migration; no new migration
+is required. The database role needs SELECT and INSERT on cards and USAGE on its
+id sequence. Shared research connections remain read-only. The legacy
+MCP_PORTFOLIO_OWNERS list no longer gates access; listed keys must still exist.
 
-This server currently reads existing portfolios only. Users can share card names,
-opening dates, and goals in chat for tailored guidance; the assistant must not
-claim to save them. These are instructions to the connected model, not a response
-filter or server-side conversation tracker, so client adherence determines wording
-and suggestion frequency. Restart the server and reconnect clients to load changes.
-# public-mcp-churning-server
-# public-mcp-churning-server
+The assistant uses 'you' unless a preferred name is supplied, avoids repeating
+suggestions, checks existing cards before requesting a portfolio, and reports saved
+cards only after a successful write. These are model instructions, so client
+adherence determines wording and frequency. Never submit account numbers or secrets.

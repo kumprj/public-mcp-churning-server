@@ -1,0 +1,11 @@
+[project]
+name = "public-mcp"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["churning-mcp", "uvicorn>=0.30", "starlette>=0.40", "python-dotenv>=1"]
+
+[tool.uv.sources]
+churning-mcp = { path = "../churning-mcp", editable = true }
+
+[dependency-groups]
+dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.8"]
