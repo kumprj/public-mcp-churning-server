@@ -48,7 +48,11 @@ Once connected, talk to the assistant naturally—no special syntax, forms, or c
 
 #### App-specific tips to talk to it successfully
 - **Claude:** Ensure the **Churning** connector toggle is enabled in your chat bar. You can choose a starter prompt if visible or simply start typing.
-- **Gemini:** Ensure the connector is active under **Preferences → Skills → Connectors**. It works across both web and iOS; if Gemini doesn't automatically trigger the tool on a broad question, explicitly prompt it: *"Check my Churning portfolio"* or *"Use the Churning tool."*
+- **Gemini:** Ensure the connector is active under **Preferences → Skills → Connectors** (works across web and iOS).
+  > **Note on Gmail / Google Drive:** Gemini's built-in Google Workspace extension often intercepts personal questions (like *"check my cards"* or *"what are my annual fees?"*) by searching your emails and Drive. To route directly to Churning:
+  > 1. Mention the tool name in your prompt: e.g., *"In Churning, what cards do I have?"* or *"Check my Churning portfolio."*
+  > 2. Or tag it explicitly with `@Churning` to force Gemini to use this connector exclusively.
+  > 3. Or disable the **Google Workspace** extension in Gemini (**Settings → Extensions**) if you don't need email/drive search.
 - **ChatGPT / Codex:** Ensure the custom MCP server is enabled in your chat session. Mentioning `@Churning` or prompting *"Use the Churning tool to check my portfolio"* ensures the model routes directly to the MCP tools rather than relying on general browsing.
 - **Perplexity:** Verify that Connectors are active in your thread sources/focus toggle. Frame requests clearly around your cards, e.g., *"Using my Churning connector, what card should I apply for next?"*
 - **Muse:** Verify the connector is toggled on in **Settings → Connectors**. To set up the custom connector in Muse chat, send:
