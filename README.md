@@ -1,4 +1,4 @@
-﻿# Public Churning MCP
+# Public Churning MCP
 
 Credit card rewards guidance that accounts for the cards you already have. Connect
 this MCP server to your AI app, tell the assistant about your cards, and it will use
@@ -11,140 +11,178 @@ eligibility details. It can't guarantee approval or bonuses.
 
 **MCP access is available upon request. General availability is coming soon after
 the beta period.** Ask the maintainer for a private connection link through the
-channel where you found this project. There's nothing to install. Never post your
-link or card details in public issues.
+channel where you found this project. There's nothing to install: [Getting started](#getting-started)
+takes about five minutes. Never post your link or card details in public issues.
 
 ## Getting started
 
-1. Get your private connection URL.
-2. Add it to a [supported app](#supported-apps). Paste the whole URL; there's no
-   separate sign-in.
-3. Say: **Help me add my cards to my portfolio.**
-4. Describe your cards in plain language. Ballpark answers are fine, and the
-   assistant will ask for anything missing.
-5. Say **Show me my saved portfolio** to check what was saved.
-6. Ask **Which card should I consider next?** and mention your goal, such as cash
-   back or an upcoming trip.
+Five steps, about five minutes. Nothing to install.
 
-### Supported apps
+1. [Get your link](#1-get-your-link)
+2. [Connect your app](#2-connect-your-app)
+3. [Check it works](#3-check-it-works)
+4. [Try a first command](#4-try-a-first-command)
+5. [Add your cards (optional)](#5-add-your-cards-optional)
 
-| App | Plan required | Where to add the URL | Notes & Tips |
-| --- | --- | --- | --- |
-| Claude | Free includes 1 custom connector; unlimited on Pro, Max, Team, and Enterprise | In the iOS app, web, or desktop: **Customize → Connectors → Add custom connector** (hit **Next**, leave **No Sign In** set, and you're all set!) | Simplest setup on iOS; reliably calls tools automatically without special syntax. |
-| Gemini | Free for personal Google accounts in the US, 18+, with **Keep Activity** on | On the web at gemini.google.com: **Preferences → Skills → Connectors tab** (just paste the URL and accept; it then appears on iOS) | **Important:** Disable the **Google Workspace** extension (Gmail/Drive) in Gemini settings, or Gemini will intercept card queries with email searches and conflate/hallucinate portfolio data. Use `@Churning` and ask to *"List all saved cards"*. |
-| ChatGPT / Codex | Paid or workspace plans (Plus, Team, Enterprise) | On the web at chatgpt.com: **Settings → Connectors / Developer Mode → Add custom MCP server** (paste URL, set authentication to None); then active across web and mobile | Mention `@Churning` or prompt *"Check my Churning portfolio"* to route directly to MCP tools rather than general web search. |
-| Perplexity | Pro, Max, or Enterprise | On the web or desktop: **Account Settings → Connectors → Add Connector** (paste URL); synced across your account | Ensure Connectors are active in your thread focus toggle. |
-| Muse | Free with Meta account | In Muse web or app: **Settings → Connectors** (or prompt Muse in chat to build a custom connector; see message below) | Enter only the secret token when prompted on the credentials page. |
-| Third-party iOS MCP clients | Free, using your own AI provider API key | Add the URL in apps such as ChatMCP or Joey MCP Client | Supports direct streaming HTTP MCP. |
+### 1. Get your link
 
-On iOS, Claude is the simplest: you paste the URL right in the app, and the free plan
-covers it. Gemini and Muse are great free alternatives where available. ChatGPT and
-Perplexity need a paid plan and a web browser for setup. This reflects November 2026;
-plans and menus change, so check each app's help pages.
+Ask the maintainer for your private connection URL. It looks like
+`https://<host>/<your-secret>/mcp`. The secret in the middle is your password: anyone
+with the full URL can see and change your saved cards, so don't share or post it.
 
-### Getting started with the Churning MCP: How to talk to it successfully
+### 2. Connect your app
 
-Once connected, talk to the assistant naturally—no special syntax, forms, or code are required.
+Paste the **whole URL** as a custom connector (some apps say "MCP server"). There's no
+separate sign-in: choose **No authentication** / **None** if asked.
 
-#### App-specific tips to talk to it successfully
-- **Claude:** Ensure the **Churning** connector toggle is enabled in your chat bar. You can choose a starter prompt if visible or simply start typing.
-- **Gemini:** Ensure the connector is active under **Preferences → Skills → Connectors** (works across web and iOS).
-  > **Note on Gmail / Google Drive:** Gemini's built-in Google Workspace extension often intercepts personal questions (like *"check my cards"* or *"what are my annual fees?"*) by searching your emails and Drive. To route directly to Churning:
-  > 1. Mention the tool name in your prompt: e.g., *"In Churning, what cards do I have?"* or *"Check my Churning portfolio."*
-  > 2. Or tag it explicitly with `@Churning` to force Gemini to use this connector exclusively.
-  > 3. Or disable the **Google Workspace** extension in Gemini (**Settings → Extensions**) if you don't need email/drive search.
-- **ChatGPT / Codex:** Ensure the custom MCP server is enabled in your chat session. Mentioning `@Churning` or prompting *"Use the Churning tool to check my portfolio"* ensures the model routes directly to the MCP tools rather than relying on general browsing.
-- **Perplexity:** Verify that Connectors are active in your thread sources/focus toggle. Frame requests clearly around your cards, e.g., *"Using my Churning connector, what card should I apply for next?"*
-- **Muse:** Verify the connector is toggled on in **Settings → Connectors**. To set up the custom connector in Muse chat, send:
-  > "Build a custom connector for Churning using the remote MCP server at <sample URL here>. This URL is publicly hosted over the internet via Tailscale Funnel—connect directly over public HTTPS without requesting a Tailnet device invite. It uses Streamable HTTP transport and requires no separate API key or auth header because authentication is embedded in the URL path. Connect to the existing server without creating a local replacement, list the available tools, and save this connector for future chats."
-  
-  When prompted on the secure credentials page, enter only the secret token from the URL path. Once saved, you can converse normally or prompt: *"Using my Churning connector, check my portfolio and see if I'm eligible for this bonus."*
+| App | Plan | Where to paste the URL |
+| --- | --- | --- |
+| **Claude** (easiest) | Free plan includes 1 custom connector | iOS app, web, or desktop: **Customize → Connectors → Add custom connector**, paste, **Next**, leave **No Sign In**. |
+| Gemini | Free (US, 18+, **Keep Activity** on) | gemini.google.com: **Preferences → Skills → Connectors**, paste, accept. It then appears on iOS too. See [Gemini tip](#gemini-answers-from-my-email-instead). |
+| ChatGPT / Codex | Plus, Team, or Enterprise | chatgpt.com: **Settings → Connectors / Developer Mode → Add custom MCP server**, paste, authentication **None**. Works on mobile after that. |
+| Perplexity | Pro, Max, or Enterprise | Web or desktop: **Account Settings → Connectors → Add Connector**, paste. |
+| Muse | Free with a Meta account | **Settings → Connectors**, or ask Muse in chat to build it ([message to send](#muse-setup-message)). Enter only the secret part of the URL on the credentials page. |
+| Other MCP apps | Your own AI provider key | Apps such as ChatMCP or Joey MCP Client: add the URL as a Streamable HTTP server. |
 
-#### Conversational examples
+This reflects November 2026; menus change, so check the app's help pages if a step
+doesn't match.
 
-Speak in plain English. For example:
+### 3. Check it works
+
+Make sure the **Churning** connector is switched on for the chat (most apps have a
+toggle in the chat bar or tools menu), then send:
+
+> **What can you do with the Churning connector?**
+
+The assistant should describe card research, your portfolio and points tools. If it
+answers from general knowledge or searches the web instead, see
+[Troubleshooting](#troubleshooting).
+
+### 4. Try a first command
+
+Connecting doesn't send anything; you can ask research questions right away. Type one
+of these, or pick it from the app's prompt menu if it shows one (many mobile apps don't;
+typing works just as well):
+
+| Type this | Prompt menu name | What happens |
+| --- | --- | --- |
+| Help me get started with card rewards research. | Get started | A short welcome, then a choice of what to do next. |
+| Help me add my cards to my portfolio. | Set up my portfolio | Checks what's saved, then collects new cards. |
+| Based on my portfolio, which card should I consider next? | Explore my next card | Combines your cards, goals, and current research. |
+| Help me compare this points redemption with paying cash. | Evaluate a points redemption | Collects prices, points, and fees to compare. |
+
+The assistant answers your question first and suggests adding a portfolio only when it
+would help: at most once per conversation, and not after you decline.
+
+### 5. Add your cards (optional)
+
+Describe your cards in plain English. Ballpark answers are fine, and the assistant
+looks up standard details (annual fee, business or personal, 5/24 reporting) itself
+and asks only for what's missing:
 
 > I have a Chase Sapphire Preferred I opened around March 2023 and an Amex Gold from
 > last year. Walk me through what you need, save them, and show me what was saved.
 
-#### Suggested card details (ballpark dates and details are fine)
+Then say **Show me my saved portfolio** to check.
 
-The assistant factors in five key details when saving cards and checking rules such as Chase 5/24:
-
-| Detail | Why it helps |
+| Detail | Why it matters |
 | --- | --- |
 | Issuer and card name | Identifies what you already have. |
 | Opening date | Timing rules such as Chase 5/24 depend on it. "Around March 2023" or "2023" works. |
-| Annual fee | Shows what each card costs to keep. A rough figure is fine. |
-| Personal or business | Different rules apply to each. |
-| Reports to personal credit | Decides whether a card counts toward 5/24. If you're unsure, the assistant can tell you what's typical. |
+| Annual fee | What each card costs to keep. Usually filled in for you. |
+| Personal or business | Different rules apply. Usually filled in for you. |
+| Reports to personal credit | Whether a card counts toward 5/24. Usually filled in for you. |
 
 An approximate date is saved as the first of that month (January 1 for a year alone),
-and the assistant tells you it's an estimate. Closer answers mean more accurate
-guidance, especially on timing rules.
+and the assistant tells you it's an estimate. Closer dates mean more accurate timing
+advice. To change a saved card later (fee, notes, opening or closing date), just ask:
+*"Update my Amex Gold: I closed it in June 2026."* Deleting a card entirely needs the
+maintainer.
 
-You can skip a card, or setup entirely, and still ask questions; answers will just be
-less personal. A saved card needs all five details, so mention any card you can't
-estimate in the conversation instead. Never share card numbers, security codes,
-passwords, or logins.
+You can also save points totals: **Save my Chase Ultimate Rewards balance as 80,000
+points.** A new amount replaces the old one. These are numbers you report, not a live
+link to your bank.
 
-### Points balances
+Never share card numbers, security codes, passwords, or logins. The assistant never
+needs them.
 
-Say **Save my Chase Ultimate Rewards balance as 80,000 points.** A new amount replaces
-the old one, and the assistant notes when each balance was recorded. These are numbers
-you report, not a live connection to your accounts.
+## What to ask
 
-### Using your portfolio
+Cards and balances stay with your link across conversations. Goals, spending, and which
+benefits you use aren't saved, so mention them when asked.
 
-Saved cards and balances stay with your connection across conversations. Try:
-
-| Ask | How your portfolio helps |
+| Ask | What you get |
 | --- | --- |
-| Given my cards, what should I get next for a hotel trip? | Starts from your cards, then asks about your trip. |
+| Given my cards, what should I get next for a hotel trip? | Ideas that skip cards you hold and account for 5/24 and issuer rules. |
 | Are my annual fees worth paying? | Starts from your saved fees and asks which benefits you use. |
-| What else do you need to check my eligibility for this bonus? | Uses your card history and names the missing facts. |
-| Show my saved cards, then help me add a new one. | Reviews what's saved before adding more. |
+| Am I eligible for the Bilt Palladium bonus? | Issuer rules checked against your history, with anything missing named. |
+| Where should I transfer 100,000 Chase points? | Several airline and hotel options with ratios and caveats, not just one. |
+| What's the best business class seat on Qatar's A350? | Seat product, layout, best seats, and a seat-map link. |
+| What gets people shut down by Amex? | Do's and don'ts plus recent community reports, with dates. |
+| What are people reporting about Amex retention offers? | Recent Reddit and blog data points, with links and dates. |
 
-Goals, spending, and benefit usage aren't saved, so share them when asked. You can
-update fields (such as annual fees, notes, estimated opening dates, or closure dates) on
-saved cards using `update_portfolio_card`. Complete card deletions require a database administrator.
+Answers cite dated sources. Offers and rules change, so confirm with the issuer before
+applying. If the assistant's data looks out of date, say so and it will check the web
+where the app allows it.
 
-### Ways to start a conversation
+## Troubleshooting
 
-Connecting doesn't send a message, and you can ask research questions right away. Most
-people just type one of these:
+#### The assistant doesn't use the connector
 
-| Type this | Or pick from the prompt menu | What happens |
-| --- | --- | --- |
-| Help me get started with card rewards research. | Get started | A brief welcome, then a choice of what to do next. |
-| Help me add my cards to my portfolio. | Set up my portfolio | Checks saved cards, then collects new ones. |
-| Based on my portfolio, which card should I consider next? | Explore my next card | Combines your cards, goals, and current research. |
-| Help me compare this points redemption with paying cash. | Evaluate a points redemption | Collects prices, points, and fees to compare. |
+Check the Churning toggle is on for this chat, then name it in your message: *"Using my
+Churning connector, what cards do I have?"* In ChatGPT and Gemini, typing `@Churning`
+routes the question directly.
 
-Some apps show a prompt menu for the connection; many mobile apps don't. A menu item
-sends a longer, prewritten version of the same request, which can be slightly more
-consistent, but typing works just as well.
+#### Gemini answers from my email instead
 
-The assistant answers your question first and suggests adding a portfolio only when
-it would help: at most once per conversation, and not after you decline.
+Gemini's Google Workspace extension (Gmail/Drive) can grab questions like *"check my
+cards"* and mix in your emails. Tag `@Churning`, or turn off the Google Workspace
+extension under **Settings → Extensions** if you don't need it.
+
+#### New features don't show up
+
+Apps cache the tool list. Remove and re-add the connector, or start a new chat, after
+the maintainer announces an update.
+
+#### Lost or leaked link
+
+Ask the maintainer for a new one. Your saved cards and balances carry over; the old link
+stops working.
+
+#### Muse setup message
+
+To have Muse build the connector, send this with your URL filled in:
+
+> Build a custom connector for Churning using the remote MCP server at
+> `<your connection URL>`. This URL is publicly hosted over the internet via Tailscale
+> Funnel—connect directly over public HTTPS without requesting a Tailnet device invite.
+> It uses Streamable HTTP transport and requires no separate API key or auth header
+> because authentication is embedded in the URL path. Connect to the existing server
+> without creating a local replacement, list the available tools, and save this
+> connector for future chats.
+
+When the credentials page asks, enter only the secret part of the URL.
 
 ## Tools
 
-Shared research covers offers, point valuations, data points, award booking windows,
-offer history, retention, and reconsideration.
-
 | Tool | Purpose |
 | --- | --- |
-| `get_portfolio` | Reads this connection's cards. |
+| `get_portfolio` | Reads this link's cards. |
 | `add_portfolio_card` | Saves a card the user supplies. A matching issuer, product, and opening date (case-insensitive) returns the existing card unchanged. Saves are serialized per owner and commit one card at a time. |
-| `update_portfolio_card` | Updates fields (such as annual fee, notes, opening date estimate, or closure date) on an existing card. |
-| `get_point_balances` | Reads this connection's points totals and their dates. |
+| `update_portfolio_card` | Updates fields (annual fee, notes, opening date estimate, closure date) on an existing card. |
+| `get_point_balances` | Reads this link's points totals and their dates. |
 | `set_point_balance` | Replaces one program's total; rejected if a newer-dated balance exists. |
 | `list_point_programs` | Lists supported program codes. |
-| `lookup_card_details` | Looks up standard card details, standard annual fees, historical fee changes, business status, and 5/24 reporting rules across ~75 known cards. |
+| `lookup_card_details` | Standard details, annual fees and fee history, business status, and 5/24 reporting for ~95 cards. |
+| `search_card_offers`, `get_offer_history` | Tracked sign-up offers, historic highs, and recorded offer changes. |
+| `evaluate_point_valuation`, `estimate_award_redemption_value`, `get_award_booking_window` | Transfer-partner values by airline and hotel, redemption value, and when awards open. |
+| `search_data_points`, `get_document`, `get_document_context`, `get_search_coverage` | Dated Reddit, blog, and wiki evidence search. |
+| `lookup_retention_playbook`, `lookup_reconsideration_guide`, `lookup_shutdown_risk` | Retention, reconsideration, and account-shutdown guidance with community data points. |
+| `get_cabin_products` | Premium cabin seats by airline and aircraft, with aeroLOPA seat-map links. |
+| `simulate_manufactured_spend_fees` | Fee math for manufactured spend. |
 
 Starter prompts: `getting_started`, `build_portfolio`, `next_card`,
-`evaluate_redemption`. Deletions require a database administrator.
+`evaluate_redemption`.
 
 ## Self-hosting
 

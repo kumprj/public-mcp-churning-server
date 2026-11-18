@@ -101,6 +101,8 @@ PUBLIC_TOOLS = (
     "estimate_award_redemption_value",
     "lookup_reconsideration_guide",
     "lookup_card_details",
+    "lookup_shutdown_risk",
+    "get_cabin_products",
 )
 
 
