@@ -107,9 +107,9 @@ PUBLIC_TOOLS = (
 )
 
 
-def assistant_instructions(has_portfolio_access: bool) -> str:
-    instructions = (
-        "Read-only churning research. Portfolio access, when available, is fixed to this link. "
+def assistant_instructions() -> str:
+    return (
+        "Read-only churning research. Portfolio access is fixed to this link. "
         "Starter prompts are available: getting_started, build_portfolio, next_card, and "
         "evaluate_redemption. If asked how to begin, offer these choices. Do not interrupt "
         "a specific question with a welcome or require onboarding before answering. "
@@ -150,19 +150,12 @@ def assistant_instructions(has_portfolio_access: bool) -> str:
         "A saved balance replaces that program's total; do not add it to the existing balance. "
         "For redemption guidance use get_point_balances and mention the recorded dates; these are "
         "user-reported snapshots, not live bank balances. Offer balance entry as optional during setup. "
-    )
-    if has_portfolio_access:
-        return instructions + (
-            "This link has portfolio read access. Use get_portfolio automatically when answering "
-            "questions about card recommendations, application timing, 5/24 status, or fee evaluations "
-            "before deciding whether to suggest sharing a portfolio. Prefer portfolio and tool data over "
-            "general knowledge. If it returns cards, use them and ask only for missing relevant details, "
-            "not for the whole portfolio again. An empty result allows the optional suggestion; a tool "
-            "error does not mean the user has no portfolio."
-        )
-    return instructions + (
-        "This link has no portfolio read tool. Do not claim to have checked a saved portfolio "
-        "or that none exists; offer to use details shared in this conversation when relevant."
+        "This link has portfolio read access. Use get_portfolio automatically when answering "
+        "questions about card recommendations, application timing, 5/24 status, or fee evaluations "
+        "before deciding whether to suggest sharing a portfolio. Prefer portfolio and tool data over "
+        "general knowledge. If it returns cards, use them and ask only for missing relevant details, "
+        "not for the whole portfolio again. An empty result allows the optional suggestion; a tool "
+        "error does not mean the user has no portfolio."
     )
 
 
@@ -341,7 +334,7 @@ def create_app(slug=None, funnel_host=None, port=None):
     for owner in secrets:
         mcp = MCPServer(
             "Churning",
-            instructions=assistant_instructions(True),
+            instructions=assistant_instructions(),
         )
         register_starter_prompts(mcp)
         for name in PUBLIC_TOOLS:
