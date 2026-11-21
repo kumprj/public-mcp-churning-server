@@ -27,7 +27,8 @@ uv run public-mcp   # serve locally; needs .env (see .env.example)
 ```
 
 `main` is protected: changes merge only by PR once the `build-and-test` CI check passes. CI installs the built
-wheel without the backend, so tests must not import `churning_mcp`.
+wheel without the backend, so tests must not import `churning_mcp`. Write PR descriptions as a short bullet
+list of what changed and why.
 
 ## Invariants
 
